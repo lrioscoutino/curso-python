@@ -1,3 +1,8 @@
+# Ejemplo de CRUD con Django ORM
+
+## Modelo
+
+```python
 # models.py
 from django.db import models
 
@@ -40,7 +45,6 @@ def delete_book(book_id):
     book = get_object_or_404(Book, id=book_id)
     book.delete()
 
-# Ejemplo de uso
 from datetime import date
 
 # Create
