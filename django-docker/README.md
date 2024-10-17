@@ -13,16 +13,16 @@ Primero, asegúrate de tener Docker y Docker Compose instalados en tu máquina. 
 
 Si aún no tienes un proyecto Django, puedes crear uno ejecutando los siguientes comandos:
 
-\`\`\`bash
+```bash
 django-admin startproject myproject
 cd myproject
-\`\`\`
+```
 
 ## 3. Estructura del proyecto
 
 Supongamos que ya tienes un proyecto Django básico. La estructura de tu proyecto será algo así:
 
-\`\`\`
+```
 myproject/
 │
 ├── manage.py
@@ -33,13 +33,13 @@ myproject/
 │   └── wsgi.py
 └── Dockerfile
 └── docker-compose.yml
-\`\`\`
+```
 
 ## 4. Crear un Dockerfile
 
 El archivo \`Dockerfile\` define la imagen de Docker para nuestra aplicación Django. Aquí te muestro un ejemplo de cómo configurarlo:
 
-\`\`\`Dockerfile
+```Dockerfile
 # Usar la imagen oficial de Python
 FROM python:3.10-slim
 
@@ -58,22 +58,22 @@ EXPOSE 8000
 
 # Comando para ejecutar la aplicación Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-\`\`\`
+```
 
 ## 5. Crear un archivo \`requirements.txt\`
 
 El archivo \`requirements.txt\` debe contener las dependencias necesarias para el proyecto, como Django y otras bibliotecas que estés utilizando. Por ejemplo:
 
-\`\`\`
+```
 Django==4.2
 djangorestframework==3.14
-\`\`\`
+```
 
 ## 6. Crear el archivo \`docker-compose.yml\`
 
 Docker Compose nos permitirá levantar el entorno de Django y cualquier otro servicio que necesitemos (como una base de datos) con un solo comando. A continuación, un ejemplo de cómo configurarlo:
 
-\`\`\`yaml
+```yaml
 version: '3'
 
 services:
@@ -100,34 +100,34 @@ services:
 
 volumes:
   postgres_data:
-\`\`\`
+```
 
 ## 7. Configurar la base de datos en \`settings.py\`
 
 Debes asegurarte de que tu proyecto Django está configurado para usar PostgreSQL en lugar de la base de datos por defecto (SQLite). En el archivo \`settings.py\`, configura la base de datos de la siguiente manera:
 
-\`\`\`python
+```python
 import os
 import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
-\`\`\`
+```
 
 Asegúrate de tener instalado \`dj-database-url\` en tu archivo \`requirements.txt\`:
 
-\`\`\`
+```
 dj-database-url==0.5.0
-\`\`\`
+```
 
 ## 8. Levantar los contenedores
 
 Una vez que tengas configurados el \`Dockerfile\` y \`docker-compose.yml\`, puedes levantar los contenedores con el siguiente comando:
 
-\`\`\`bash
+```bash
 docker-compose up
-\`\`\`
+```
 
 Esto creará los contenedores, iniciará la base de datos y la aplicación Django, y podrás acceder a tu aplicación en \`http://localhost:8000\`.
 
@@ -135,9 +135,9 @@ Esto creará los contenedores, iniciará la base de datos y la aplicación Djang
 
 Como estamos usando PostgreSQL en contenedores, debemos ejecutar las migraciones para preparar la base de datos. En una nueva terminal, ejecuta el siguiente comando:
 
-\`\`\`bash
+```bash
 docker-compose run web python manage.py migrate
-\`\`\`
+```
 
 ## 10. Administra los contenedores
 
