@@ -1,0 +1,84 @@
+# Phishing y Suplantación de Identidad: Amenazas Críticas para Empresas Fintech
+
+## 1. Introducción
+
+En el mundo de las fintech, donde manejamos datos financieros sensibles y realizamos transacciones de alto valor, el phishing y la suplantación de identidad representan amenazas significativas. Esta presentación tiene como objetivo educar a todos los miembros de nuestra empresa sobre estos riesgos y cómo protegernos.
+
+## 2. ¿Qué es el Phishing?
+
+El phishing es una técnica de ingeniería social que busca engañar a las víctimas para que revelen información sensible, como credenciales de acceso o datos financieros.
+
+### Tipos comunes de phishing en el sector fintech:
+
+- **Spear Phishing**: Ataques dirigidos a individuos específicos, a menudo altos ejecutivos.
+- **Whaling**: Dirigido a "peces gordos" como CEOs o CFOs.
+- **Smishing**: Phishing a través de mensajes de texto SMS.
+- **Vishing**: Phishing por vía telefónica.
+
+### Ejemplo de un ataque de phishing en fintech:
+
+Un empleado recibe un correo electrónico que parece ser de un socio comercial, solicitando la verificación de credenciales para una "actualización de seguridad urgente". El enlace lleva a una página falsa que roba las credenciales.
+
+## 3. Suplantación de Identidad en el Contexto Fintech
+
+La suplantación de identidad implica que un atacante se hace pasar por otra persona o entidad para obtener beneficios fraudulentos.
+
+### Métodos comunes:
+
+- Creación de perfiles falsos en redes sociales corporativas.
+- Falsificación de documentos de identidad para abrir cuentas fraudulentas.
+- Manipulación de datos biométricos para bypass de sistemas de seguridad.
+
+### Ejemplo de suplantación en fintech:
+
+Un atacante crea un perfil falso de LinkedIn que imita a un ejecutivo de la empresa. Luego, contacta a empleados solicitando acceso a sistemas internos para una "auditoría sorpresa".
+
+## 4. Impacto en Empresas Fintech
+
+- Pérdidas financieras directas por transacciones fraudulentas.
+- Robo de propiedad intelectual y estrategias de negocio.
+- Daño a la reputación y pérdida de confianza de los clientes.
+- Costos asociados con la recuperación y fortalecimiento de sistemas.
+- Posibles sanciones regulatorias por incumplimiento de normativas de seguridad.
+
+## 5. Señales de Alerta
+
+- Urgencia injustificada en las solicitudes.
+- Errores gramaticales o de ortografía en comunicaciones oficiales.
+- Solicitudes de información sensible por canales no seguros.
+- URLs o dominios de correo electrónico ligeramente modificados.
+- Llamadas o mensajes no solicitados que piden acciones inmediatas.
+
+## 6. Mejores Prácticas de Prevención
+
+- Implementar autenticación multi-factor (MFA) en todos los sistemas.
+- Utilizar firmas digitales y cifrado en comunicaciones importantes.
+- Realizar capacitaciones regulares de concientización en seguridad.
+- Implementar políticas estrictas de verificación de identidad para transacciones de alto valor.
+- Utilizar sistemas de detección y prevención de intrusiones (IDS/IPS).
+- Mantener todos los sistemas y software actualizados.
+- Realizar auditorías de seguridad y pruebas de penetración periódicas.
+
+## 7. Protocolo de Respuesta a Incidentes
+
+1. Identificación y aislamiento del incidente.
+2. Notificación inmediata al equipo de seguridad.
+3. Evaluación del alcance y el impacto.
+4. Contención y erradicación de la amenaza.
+5. Recuperación de sistemas y datos.
+6. Análisis post-incidente y mejora de protocolos.
+
+## 8. Caso de Estudio: El Ataque de Phishing a Ubiquiti Networks
+
+En 2015, Ubiquiti Networks, una empresa de tecnología financiera, fue víctima de un sofisticado ataque de phishing que resultó en la pérdida de $46.7 millones. Los atacantes se hicieron pasar por ejecutivos de la empresa y engañaron al departamento de finanzas para que realizara transferencias a cuentas fraudulentas.
+
+**Lecciones aprendidas:**
+- Importancia de verificar todas las solicitudes de transferencias de fondos por múltiples canales.
+- Necesidad de implementar controles estrictos en procesos financieros.
+- Valor de la capacitación continua del personal en seguridad.
+
+## 9. Conclusión
+
+El phishing y la suplantación de identidad son amenazas en constante evolución. La vigilancia continua, la educación y la implementación de robustas medidas de seguridad son esenciales para proteger nuestra empresa, nuestros clientes y nuestra reputación en el competitivo mundo de las fintech.
+
+Recuerda: La seguridad es responsabilidad de todos. Si sospechas de algo, repórtalo inmediatamente.
