@@ -1,3 +1,6 @@
+Aplicación Django simple que implemente autenticación de múltiples factores (MFA) utilizando django-otp.
+
+```python
 # requirements.txt
 Django==5.0.1
 django-otp==1.3.0
@@ -133,3 +136,42 @@ urlpatterns = [
     </form>
 </div>
 {% endblock %}
+
+```
+
+Esta es una aplicación Django básica que implementa MFA usando TOTP (Time-based One-Time Password). Aquí están los componentes principales:
+
+1. **Configuración**:
+   - Usamos `django-otp` para manejar la autenticación de dos factores
+   - Agregamos el middleware necesario de OTP
+
+2. **Modelo de Usuario**:
+   - Extendemos el modelo de usuario predeterminado de Django
+
+3. **Vistas principales**:
+   - `register`: Para crear nuevos usuarios
+   - `setup_mfa`: Para configurar el dispositivo MFA
+   - `verify_token`: Para verificar el código TOTP
+
+4. **Templates**:
+   - Formularios básicos para registro y verificación
+   - Página para mostrar el código QR
+
+Para usar esta aplicación:
+
+1. Instala las dependencias:
+```bash
+pip install -r requirements.txt
+```
+
+2. Realiza las migraciones:
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+3. Flujo de uso:
+   - El usuario se registra
+   - Se genera un dispositivo TOTP
+   - El usuario escanea el código QR con una app como Google Authenticator
+   - El usuario verifica el token generado
