@@ -1,127 +1,161 @@
-### Tarea: **Consumo de APIs en Python**
+"""
+EJERCICIOS DE INTRODUCCIÓN A PYTHON
 
-**Objetivo:** Aprender a consumir APIs en Python, utilizar datos de fuentes externas, procesarlos y presentarlos de manera adecuada.
+Objetivo: Practicar conceptos fundamentales de programación en Python
+mediante ejemplos prácticos y explicativos.
+"""
 
----
+# 1. VARIABLES Y TIPOS DE DATOS
+"""
+Objetivo: Demostrar la declaración de variables con diferentes tipos de datos
+Tipos a explorar:
+- Cadenas (str)
+- Enteros (int)
+- Flotantes (float)
+- Booleanos (bool)
 
-### Introducción:
+Conceptos:
+- Asignación de valores
+- Impresión de variables
+- Uso de la función type() para identificar tipos
+"""
+nombre = "Juan Pérez"
+edad = 25
+altura = 1.75
+es_estudiante = True
 
-Una **API (Interfaz de Programación de Aplicaciones)** es un conjunto de reglas que permiten que un software interactúe con otro software. Las APIs web permiten que los programas se comuniquen a través de Internet y accedan a servicios o datos de manera eficiente.
+print("1. Variables y Tipos de Datos:")
+print(f"Nombre: {nombre}")
+print(f"Edad: {edad}")
+print(f"Altura: {altura}")
+print(f"Es estudiante: {es_estudiante}")
+print(f"Tipo de nombre: {type(nombre)}")
+print(f"Tipo de edad: {type(edad)}")
+print(f"Tipo de altura: {type(altura)}")
+print(f"Tipo de es_estudiante: {type(es_estudiante)}\n")
 
-En el consumo de APIs, Python ofrece varias herramientas, siendo una de las más populares el módulo `requests`, que simplifica el proceso de hacer solicitudes HTTP (GET, POST, PUT, DELETE, etc.) y trabajar con los datos que estas devuelven, generalmente en formato JSON.
+# 2. OPERADORES ARITMÉTICOS
+"""
+Objetivo: Practicar operaciones matemáticas básicas
+Operadores a demostrar:
+- Suma (+)
+- Resta (-)
+- Multiplicación (*)
+- División (/)
+- División entera (//)
+- Módulo (%)
+- Potencia (**)
+Conceptos:
+- Definición de función con múltiples operaciones
+- Impresión de resultados de operaciones
+"""
+def calcular_operaciones(a, b):
+    print("2. Operadores Aritméticos:")
+    print(f"Suma: {a} + {b} = {a + b}")
+    print(f"Resta: {a} - {b} = {a - b}")
+    print(f"Multiplicación: {a} * {b} = {a * b}")
+    print(f"División: {a} / {b} = {a / b}")
+    print(f"División entera: {a} // {b} = {a // b}")
+    print(f"Módulo (residuo): {a} % {b} = {a % b}")
+    print(f"Potencia: {a} ** {b} = {a ** b}\n")
 
----
+calcular_operaciones(10, 3)
 
-### Ejercicio Práctico:
-
-Vas a consumir una API pública de clima para obtener el pronóstico del tiempo en una ciudad específica. Utilizaremos la API de [OpenWeatherMap](https://openweathermap.org/api) para este ejemplo.
-
-#### Requisitos:
-1. Crear un script que consuma la API de OpenWeatherMap usando el módulo `requests`.
-2. El usuario deberá ingresar el nombre de una ciudad, y el script mostrará:
-   - La temperatura actual.
-   - La descripción del clima (ej. “clear sky”).
-   - La humedad.
-3. En caso de error (por ejemplo, si el nombre de la ciudad no existe), manejar adecuadamente las excepciones y errores HTTP.
-
-#### Paso 1: Instalación de la biblioteca `requests`
-Si aún no tienes instalada la biblioteca `requests`, puedes instalarla usando `pip`:
-
-```bash
-pip install requests
-```
-
-#### Paso 2: Crear una cuenta en OpenWeatherMap
-Necesitas crear una cuenta en [OpenWeatherMap](https://home.openweathermap.org/users/sign_up) para obtener una **API Key**, que es necesaria para hacer solicitudes a su API.
-
-#### Paso 3: Implementación del Código
-
-Crea un script Python que siga la estructura que se presenta a continuación:
-
-```python
-import requests
-import json
-
-def obtener_clima(ciudad, api_key):
-    # URL base de la API
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={ciudad}&appid={api_key}&units=metric"
+# 3. OPERADORES LÓGICOS Y CONDICIONALES
+"""
+Objetivo: Implementar estructuras condicionales y operadores lógicos
+Conceptos a practicar:
+- Uso de if, elif, else
+- Operadores lógicos (and, or, not)
+- Operador ternario
+- Evaluación de condiciones múltiples
+"""
+def clasificar_numero(numero):
+    print("3. Operadores Lógicos y Condicionales:")
     
-    try:
-        # Hacer la solicitud a la API
-        respuesta = requests.get(url)
-        respuesta.raise_for_status()  # Verificar si hubo algún error en la solicitud
-        datos = respuesta.json()  # Convertir los datos a formato JSON
-
-        # Extraer y mostrar los datos relevantes
-        temperatura = datos['main']['temp']
-        descripcion_clima = datos['weather'][0]['description']
-        humedad = datos['main']['humidity']
-        
-        print(f"Clima en {ciudad.capitalize()}:")
-        print(f"Temperatura: {temperatura}°C")
-        print(f"Descripción: {descripcion_clima}")
-        print(f"Humedad: {humedad}%")
+    if numero > 0 and numero % 2 == 0:
+        print(f"{numero} es un número positivo par")
+    elif numero > 0 and numero % 2 != 0:
+        print(f"{numero} es un número positivo impar")
+    elif numero < 0:
+        print(f"{numero} es un número negativo")
+    else:
+        print(f"{numero} es cero")
     
-    except requests.exceptions.HTTPError as http_err:
-        print(f"Error HTTP: {http_err}")
-    except Exception as err:
-        print(f"Error: {err}")
+    # Operador ternario
+    resultado = "Mayor de edad" if numero >= 18 else "Menor de edad"
+    print(f"Condición de edad: {resultado}\n")
 
-# Obtener la ciudad del usuario
-ciudad = input("Ingresa el nombre de una ciudad: ")
+clasificar_numero(20)
+clasificar_numero(-5)
+clasificar_numero(0)
 
-# Aquí deberías ingresar tu API key de OpenWeatherMap
-api_key = "tu_api_key_aqui"
+# 4. FUNCIONES
+"""
+Objetivo: Demostrar definición y uso de funciones
+Conceptos a practicar:
+- Definición de funciones
+- Recursividad
+- Retorno de valores
+- Documentación de funciones
+"""
+def calcular_factorial(n):
+    """Calcula el factorial de un número usando recursividad"""
+    print("4. Funciones y Recursividad:")
+    if n == 0 or n == 1:
+        return 1
+    else:
+        return n * calcular_factorial(n-1)
 
-# Llamar a la función para obtener el clima
-obtener_clima(ciudad, api_key)
-```
+print(f"Factorial de 5: {calcular_factorial(5)}\n")
 
-#### Explicación del Código:
-1. **API URL**: La URL de la API incluye el nombre de la ciudad y tu API key. La opción `units=metric` se usa para obtener los resultados en grados Celsius.
-2. **Manejo de errores**: Usamos `requests.exceptions.HTTPError` para manejar posibles errores HTTP, y `try-except` para manejar excepciones generales.
-3. **Salida de datos**: El script extrae y muestra la temperatura, la descripción del clima y la humedad de la respuesta de la API.
+# 5. LOOPS: FOR
+"""
+Objetivo: Practicar iteración con bucles for
+Conceptos a demostrar:
+- Iteración sobre listas
+- Uso de range()
+- Recorrido de elementos
+"""
+print("5. Loops - For:")
+frutas = ["manzana", "banana", "cereza"]
+for fruta in frutas:
+    print(f"Me gusta comer {fruta}")
 
-#### Paso 4: Prueba
+# Rango de números con for
+print("\nConteo con for:")
+for i in range(5):
+    print(f"Número: {i}")
 
-1. **Corre el script** y prueba ingresando nombres de varias ciudades, como "London", "Paris", "New York", o cualquier otra.
-2. Verifica el manejo de errores ingresando un nombre de ciudad incorrecto, como "Xyz123".
+# 6. LOOPS: WHILE
+"""
+Objetivo: Implementar bucles while con control de condición
+Conceptos a practicar:
+- Bucle while
+- Incremento de contador
+- Condición de parada
+"""
+print("\n6. Loops - While:")
+contador = 0
+while contador < 3:
+    print(f"Contador: {contador}")
+    contador += 1
 
----
-
-### Tarea:
-
-1. **Modificación**: Modifica el script para que también muestre la **velocidad del viento** y el **país** al que pertenece la ciudad.
-2. **Repetir solicitudes**: Permite que el usuario ingrese varias ciudades en una misma ejecución del programa. Esto se puede hacer añadiendo un ciclo que solo se detenga cuando el usuario desee salir.
-3. **Presentación**: Formatea la salida para que sea más clara y legible, por ejemplo:
-
-```
-Clima en Londres, UK:
--------------------------------------
-Temperatura: 15°C
-Descripción: cielo claro
-Humedad: 50%
-Velocidad del viento: 5.1 m/s
-```
-
----
-
-### Instrucciones de Entrega:
-1. Implementa el código solicitado y guárdalo en un archivo `.py`.
-2. Sube tu código a un repositorio de GitHub o envíalo comprimido en un archivo `.zip` agergando video o screenshots de pantalla.
-3. Fecha de entrega: **21/Octubre/2024**.
-4. Criterios de evaluación:
-   - Correctitud del resultado.
-   - Manejo adecuado de excepciones y errores.
-   - Claridad y legibilidad del código.
-
----
-
-### Recursos Sugeridos:
-- [Documentación oficial de requests](https://docs.python-requests.org/en/master/)
-- [API de OpenWeatherMap](https://openweathermap.org/current)
-- [Manejo de errores en requests](https://docs.python-requests.org/en/master/user/quickstart/#errors-and-exceptions)
-
----
-
-Esta tarea te permitirá familiarizarte con el uso de APIs en Python, y te dará experiencia en el procesamiento de datos provenientes de servicios externos.
+# 7. LISTAS Y MANIPULACIÓN
+"""
+Objetivo: Demostrar operaciones básicas con listas
+Conceptos a practicar:
+- Creación de listas
+- Métodos de lista (append, remove)
+- Comprensión de listas
+- Transformación de elementos
+"""
+numeros = [1, 2, 3, 4, 5]
+print("\n7. Listas:")
+print("Lista original:", numeros)
+numeros.append(6)
+print("Después de append:", numeros)
+numeros.remove(3)
+print("Después de remove:", numeros)
+numeros_cuadrados = [x**2 for x in numeros]
+print("Lista de cuadrados:", numeros_cuadrados)
