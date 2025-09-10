@@ -1,0 +1,242 @@
+Servicio para generar el token 
+
+autenticación básica (authorization: basic)
+method Get
+https://app.compliance.com.co/validador/apiPublica/TokenService/token
+
+Una vez generado el token de autenticación, se debe llamar uno de los siguientes endpoints con un método POST y en el header “Bearer” (authorization: Bearer) enviar el token entregado en el paso anterior.
+
+Si se desea obtener únicamente los resultados que presentaron riesgo se debe llamar la URL
+
+Es IMPORTANTE resaltar que los tokens tienen una vigencia de 1 hora (3600 segundos). Pasado este tiempo se debe llamar nuevamente el servicio de generación de tokens
+
+(https://app.datariesgos.com/validador/apiPublica/TokenService/token) para crear uno nuevo.
+
+
+https://app.datariesgos.com/validador/ws/ConsultaConsolidadaService/consultaConsolidada/soloRiesgo/true
+
+Si se desea obtener toda la información sin importar si generó riesgo o no se debe llamar la URL 
+
+https://app.datariesgos.com/validador/ws/ConsultaConsolidadaService/consultaConsolidada/soloRiesgo/false
+
+
+Para el caso de otros países, la estructura JSON a enviar es la siguiente:
+{
+"datoConsultar":"12345678",
+"tipoDocumento":"dni",
+"codigoPais":"PER",
+"nombre":"PEDRO ANTONIO PEREZ HERNANDEZ"
+}
+
+
+Respuesta API REST
+En general, el servicio consolidado retorna una estructura JSON como la siguiente:
+
+{
+"idDatoConsultado": 46793409,
+"tipoDocumento": "cc",
+"resultados": [],
+"isMenorEdad": false,
+"totalFuentesConError": 0,
+"datoConsultado": "9734609",
+"totalFuentesConsultadas": 46,
+"idConsulta": 15386233,
+"nombre": "JUAN DIEGO CARDENAS VALENCIA",
+"presentaRiesgo": false,
+"pep": false,
+"tieneResultados": false
+}
+
+--------- Escenario SoloRiesgo = true con dato que SI genera Riesgo:
+{
+"idDatoConsultado": 46793434,
+"tipoDocumento": "cc",
+"resultados": [
+{
+"lista": "OtrasPepsService",
+"descripcion": [
+"tipoDocumento: cc|numDocumento: 19123402|informacion:
+PRESIDENTE|fechaNoticia: 15/04/18|fechaCargue: Mon Apr 18 00:00:00 UTC 2016|fuente:
+MINISTRO Y VICEMINISTROS|observaciones: PERSONA PUBLICAMENTE EXPUESTA POR SU RECONOCIMIENTO, PROFESIÓN, CARGO U OFICIO - NO ES INFORMACIÓN RESTRICTIVA NI
+VINCULANTE. BASADO EN LAS 40 RECOMENDACIONES DEL GAFI - Concepto 2014115420-001 del 21
+de enero de 2015, emitido por la Superintendencia Financiera de Colombia.|tipopep:
+PERSONA PUBLICAMENTE EXPUESTA|id: 335|nombre: JUAN MANUEL SANTOS CALDERÓN\n",
+"tipoDocumento: cc|numDocumento: 19123402|informacion: PRESIDENTE LA
+REPÚBLICA|fechaNoticia: 15/04/18|fechaCargue: Mon Apr 18 00:00:00 UTC 2016|fuente:
+PRESIDENTE LA REPÚBLICA|observaciones: PERSONA PUBLICAMENTE EXPUESTA POR SU
+RECONOCIMIENTO, PROFESIÓN, CARGO U OFICIO - NO ES INFORMACIÓN RESTRICTIVA NI
+VINCULANTE. BASADO EN LAS 40 RECOMENDACIONES DEL GAFI - Concepto 2014115420-001 del 21
+de enero de 2015, emitido por la Superintendencia Financiera de Colombia.|tipopep:
+PERSONA PUBLICAMENTE EXPUESTA|id: 1638|nombre: JUAN MANUEL SANTOS CALDERÓN\n"
+],
+"tipo": "peps",
+"duracion": 62,
+"presentaRiesgo": true,
+"tieneResultados": true,
+"presentaAdvertencia": false
+}
+],
+"isMenorEdad": false,
+"totalFuentesConError": 0,
+"datoConsultado": "19123402",
+"totalFuentesConsultadas": 46,
+"idConsulta": 15386259,
+"nombre": "JUAN MANUEL SANTOS CALDERON",
+"presentaRiesgo": true,
+"tieneResultados": true
+}
+
+------- Escenario SoloRiesgo = false
+
+
+{
+"idDatoConsultado": 10007490,
+"tipoDocumento": "cc",
+"resultados": [
+{
+"lista": "BidService",
+"descripcion": [],
+"tipo": "listasInternacionales",
+"duracion": 452,
+"presentaRiesgo": false,
+"tieneResultados": false,
+"presentaAdvertencia": false
+},
+{
+"lista": "BoletinDeudoresMorososService",
+"descripcion": ["descripcion: El documento de identificación número 19123402
+NO está incluido en el BDME que publica la CONTADURÍA GENERAL DE LA NACIÓN, de acuerdo con lo establecido en el artículo 2° de la Ley 901 de 2004.\nEl documento de
+identificación número 19123402 NO ha incumplido acuerdos de pago de conformidad con lo
+establecido en el numeral 5° del artículo 2º de la Ley 1066 de 2006.\n"],
+"tipo": "listasNacionales",
+"duracion": 157,
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "DianRutService",
+"descripcion": [
+"digitoVerificacion: 5",
+"razonSocial: JUAN MANUEL SANTOS CALDERON",
+"estado: REGISTRO ACTIVO",
+"nit: 19123402"
+],
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "FosygaAfiliacionesService",
+"descripcion": [
+"idDatoConsultado: 10007490|estado: ACTIVO|fechaAfiliacion:
+10/07/1998|entidad: COMPENSAR E.P.S.|id: 3968|regimen: CONTRIBUTIVO|tipoAfiliado:
+COTIZANTE\n",
+"apellidos: SANTOS CALDERON|idDatoConsultado: 10007490|fechaNacimiento:
+**/**/**|numIdentificacion: 19123402|tipoIdentificacion: CC|municipio: BOGOTA
+D.C.|departamento: BOGOTA D.C.|id: 4184|nombres: JUAN MANUEL\n"
+],
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "InterpolService",
+"descripcion": ["respuestaSin: El documento ingresado no se encuentra
+registrado en la lista de Interpol"],
+"tipo": "listasInternacionales",
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "LibretaMilitarService",
+"descripcion": ["idDatoConsultado: 10007490|mensajeError: |lugar: Distrito
+Militar No. 055|direccion: Av. Carrera Centro Comercial Centro Fusa Local 117
+(Fusagasugá - Cundinamarca)|id: 154|nombre: JUAN MANUEL SANTOS
+CALDERON|mensajeWarning: |clase: Reservista - 1ra Clase\n"],
+"tipo": "infoGeneral", "presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "OfacService",
+"descripcion": ["respuestaSin: Your search has not returned any results."],
+"tipo": "listasInternacionales",
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "OnuService",
+"descripcion": [],
+"tipo": "listasInternacionales",
+"presentaRiesgo": false,
+"tieneResultados": false,
+"presentaAdvertencia": false
+},
+{
+"lista": "Peps1674Service",
+"descripcion": [
+"institucion: DEPARTAMENTO ADMINISTRATIVO DE LA PRESIDENCIA DE LA
+REPUBLICA",
+"cargo: Presidente De La Republica ",
+"nombre: JUAN MANUEL SANTOS CALDERON"
+],
+"tipo": "peps",
+"presentaRiesgo": true,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "RamaJudicialService",
+"descripcion": [
+"ciudad: Bogotá y Cundinamarca\n",
+"ciudad: Medellín - Antioquia\n",
+"ciudad: Bucaramanga Santander del Sur y Santander del Norte\n",
+"ciudad: Buga\n",
+"ciudad: Palmira - Valle\n",
+"ciudad: Quindío - Armenia - Eje Cafetero\n",
+"ciudad: Sur - Guaviare - Caquetá - Florencia\n",
+"ciudad: Tolima Ibagué\n",
+"ciudad: Caldas\n",
+"ciudad: Huila - Neiva\n",
+"ciudad: Sur - Nariño - Pasto - Putumayo\n",
+"ciudad: Risaralda - Pereira\n",
+"ciudad: Pacífico - Cauca - Chocó\n",
+"ciudad: Valle del Cauca - Cali\n",
+"ciudad: Boyacá - Tunja\n","ciudad: Llanos Orientales - Meta y Casanare\n"
+],
+"tipo": "listasNacionales",
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+},
+{
+"lista": "SecopSancionesService",
+"descripcion": [],
+"tipo": "listasNacionales",
+"presentaRiesgo": false,
+"tieneResultados": false,
+"presentaAdvertencia": false
+},
+{
+"lista": "TramiteCedulaService",
+"descripcion": ["estadoTramite: Su solicitud del Documento 19123402 no se
+encuentra en Trámite. Si solicitó el Trámite de su documento por favor consulte esta
+base de datos en los próximos días para verificar el estado de su documento, y si aún
+no ha solicitado la RENOVACION de su documento, por favor solicítela."],
+"tipo": "infoGeneral",
+"presentaRiesgo": false,
+"tieneResultados": true,
+"presentaAdvertencia": false
+}
+],
+"datoConsultado": "19123402",
+"totalFuentesConsultadas": 12,
+"idConsulta": 107239,
+"nombre": "JUAN MANUEL SANTOS CALDERON",
+"tieneResultados": true,
+"presentaRiesgo": false,
+"pep": true,
+}
