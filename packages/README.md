@@ -1,5 +1,5 @@
 # Tópicos Avanzados de Programación con Python
-## Clase 2: Componentes y Librerías
+## Clase Componentes y Librerías
 
 ---
 
