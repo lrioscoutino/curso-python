@@ -1,0 +1,32 @@
+query GetMatrimonialPropertyRegimes($id: ID) {
+    matrimonialPropertyRegimes(id: $id) {
+      id
+      name
+    }
+  }
+
+  Detalles de la query:
+
+  - Nombre de la query: matrimonialPropertyRegimes
+  - Parámetro opcional: id (tipo ID) - si se proporciona, filtra por un régimen específico
+  - Campos disponibles:
+    - id: ID del régimen matrimonial
+    - name: Nombre del régimen matrimonial
+
+  Ejemplos de uso:
+
+  1. Obtener todos los regímenes matrimoniales:
+  query {
+    matrimonialPropertyRegimes {
+      id
+      name
+    }
+  }
+
+  2. Obtener un régimen específico por ID:
+  query {
+    matrimonialPropertyRegimes(id: "1") {
+      id
+      name
+    }
+  }

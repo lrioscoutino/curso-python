@@ -1,0 +1,291 @@
+# Práctica: Implementar JWT en Django + DRF
+
+## 📚 Parte Teórica
+
+### ¿Qué es JWT?
+
+JWT (JSON Web Token) es un estándar abierto (RFC 7519) que define una forma compacta y autónoma de transmitir información de forma segura entre partes como un objeto JSON.
+
+### Estructura de un JWT
+
+Un JWT está compuesto por tres partes separadas por puntos:
+
+```
+xxxxx.yyyyy.zzzzz
+```
+
+1. **Header (Encabezado)**: Tipo de token y algoritmo de encriptación
+2. **Payload (Carga útil)**: Datos del usuario (claims)
+3. **Signature (Firma)**: Verificación de integridad
+
+### ¿Cómo funciona?
+
+1. Usuario envía credenciales (email/password)
+2. Servidor valida y genera un JWT
+3. Cliente guarda el token
+4. Cliente envía el token en cada petición
+5. Servidor verifica el token y permite/deniega acceso
+
+### Ventajas de JWT
+
+- ✅ Stateless (sin sesiones en servidor)
+- ✅ Escalable
+- ✅ Funciona en múltiples dominios
+- ✅ Seguro si se implementa correctamente
+
+---
+
+## 🛠️ Parte Práctica
+
+### Paso 1: Instalar dependencias
+
+Abrir terminal en la carpeta del proyecto y ejecutar:
+
+```bash
+pip install djangorestframework-simplejwt
+```
+
+### Paso 2: Configurar settings.py
+
+Abrir `proyectp2025/settings.py` y agregar/modificar:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',  # Agregar esta línea
+    # ... tus otras apps
+]
+
+# Configuración de REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# Configuración de JWT
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+```
+
+### Paso 3: Crear URLs para JWT
+
+Abrir `proyectp2025/urls.py` y agregar:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # ... tus otras rutas
+]
+```
+
+### Paso 4: Crear un usuario de prueba
+
+Ejecutar en terminal:
+
+```bash
+python manage.py createsuperuser
+```
+
+Ingresar:
+- Username: `admin`
+- Email: `admin@example.com`
+- Password: `admin123` (o la que prefieras)
+
+### Paso 5: Crear una vista protegida
+
+Crear archivo `api/views.py` (o usar el existente):
+
+```python
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class VistaProtegida(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            'message': '¡Acceso autorizado!',
+            'user': request.user.username,
+            'email': request.user.email
+        })
+```
+
+### Paso 6: Agregar ruta para vista protegida
+
+En `proyectp2025/urls.py`:
+
+```python
+from api.views import VistaProtegida
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/protegida/', VistaProtegida.as_view(), name='vista_protegida'),
+]
+```
+
+### Paso 7: Migrar la base de datos
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Paso 8: Iniciar el servidor
+
+```bash
+python manage.py runserver
+```
+
+---
+
+## 🧪 Pruebas
+
+### Opción A: Usar cURL
+
+#### 1. Obtener token (Login):
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+**Respuesta esperada:**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+```
+
+#### 2. Acceder a ruta protegida:
+
+```bash
+curl http://127.0.0.1:8000/api/protegida/ \
+  -H "Authorization: Bearer TU_ACCESS_TOKEN_AQUI"
+```
+
+**Respuesta esperada:**
+```json
+{
+  "message": "¡Acceso autorizado!",
+  "user": "admin",
+  "email": "admin@example.com"
+}
+```
+
+#### 3. Refrescar token:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/token/refresh/ \
+  -H "Content-Type: application/json" \
+  -d '{"refresh":"TU_REFRESH_TOKEN_AQUI"}'
+```
+
+### Opción B: Usar Postman
+
+#### 1. Obtener token:
+- Método: `POST`
+- URL: `http://127.0.0.1:8000/api/token/`
+- Body (raw/JSON):
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+#### 2. Acceder a ruta protegida:
+- Método: `GET`
+- URL: `http://127.0.0.1:8000/api/protegida/`
+- Headers:
+  - Key: `Authorization`
+  - Value: `Bearer TU_ACCESS_TOKEN_AQUI`
+
+### Opción C: Usar el navegador con extensión REST Client
+
+Instalar extensión como "REST Client" en VS Code y crear archivo `test.http`:
+
+```http
+### Obtener token
+POST http://127.0.0.1:8000/api/token/
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Acceder a ruta protegida
+GET http://127.0.0.1:8000/api/protegida/
+Authorization: Bearer TU_ACCESS_TOKEN_AQUI
+```
+
+---
+
+## 🔍 Verificación de errores comunes
+
+### Error 1: "No module named 'rest_framework_simplejwt'"
+**Solución:** Ejecutar `pip install djangorestframework-simplejwt`
+
+### Error 2: Token inválido o expirado
+**Solución:** Obtener un nuevo token con el endpoint `/api/token/`
+
+### Error 3: "Authentication credentials were not provided"
+**Solución:** Asegurarse de incluir el header `Authorization: Bearer TOKEN`
+
+### Error 4: "401 Unauthorized"
+**Solución:** Verificar que el usuario existe y las credenciales son correctas
+
+---
+
+## 📝 Ejercicios adicionales
+
+1. **Crear un endpoint de registro de usuarios**
+2. **Agregar más campos al payload del JWT**
+3. **Implementar logout con blacklist de tokens**
+4. **Crear diferentes niveles de permisos**
+5. **Agregar tiempo de expiración personalizado**
+
+---
+
+## 🎯 Entregables
+
+- [ ] Proyecto funcionando con JWT
+- [ ] Screenshot de Postman/cURL mostrando login exitoso
+- [ ] Screenshot de acceso a ruta protegida
+- [ ] Screenshot de error al intentar acceder sin token
+
+---
+
+## 📚 Referencias
+
+- [Documentación djangorestframework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/)
+- [JWT.io](https://jwt.io/)
+- [Django REST Framework](https://www.django-rest-framework.org/)
