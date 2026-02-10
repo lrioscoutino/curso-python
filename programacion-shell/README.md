@@ -401,35 +401,26 @@ done
 
 **1.** Que es el shebang (`#!/bin/bash`) y por que es importante?
 
-> Es la directiva que indica al sistema operativo que interprete debe usar para ejecutar el script. Sin ella, el sistema usaria el shell por defecto del usuario, lo que podria causar incompatibilidades si el script usa sintaxis especifica de Bash.
-
 **2.** Cual es la diferencia entre `$@` y `$*` al estar entre comillas dobles?
 
-> `"$@"` expande cada argumento como una cadena separada (preservando espacios dentro de cada argumento), mientras que `"$*"` une todos los argumentos en una sola cadena separada por el primer caracter de `$IFS` (por defecto, un espacio).
 
 **3.** Que hace `2>/dev/null` y por que se usa en el script?
 
-> Redirige la salida de error estandar (stderr, descriptor 2) a `/dev/null`, descartandola. Se usa para suprimir mensajes de error que no son relevantes para el usuario, como errores de permisos al acceder a directorios de otros usuarios.
 
 **4.** Explique la diferencia entre `[ ]` y `[[ ]]` en Bash.
 
-> `[ ]` es el comando `test` compatible con POSIX. `[[ ]]` es una extension de Bash que soporta operadores adicionales como `=~` (regex), `&&`, `||` dentro de la expresion, y no requiere escapar caracteres especiales. `[[ ]]` no hace word splitting ni globbing en variables.
 
 **5.** Por que usamos `read -r` en lugar de solo `read` al leer archivos?
 
-> La opcion `-r` evita que `read` interprete las barras invertidas (`\`) como caracteres de escape. Sin `-r`, una linea que contenga `\n` seria interpretada como un salto de linea en lugar de los caracteres literales.
 
 **6.** Que sucede si no se pone `exit 0` al final del script?
 
-> El script devuelve el codigo de salida del ultimo comando ejecutado. `exit 0` garantiza explicitamente que el script termina con codigo de exito exitoso (0), independientemente del resultado del ultimo comando.
 
 **7.** Explique que hace el pipeline: `awk -F: '$3 >= 1000 {count++} END {print count}' /etc/passwd`
 
-> Lee `/etc/passwd` usando `:` como separador de campos (`-F:`). Para cada linea donde el tercer campo (UID) es mayor o igual a 1000, incrementa un contador. Al finalizar (`END`), imprime el total. Esto cuenta los usuarios regulares del sistema (no usuarios de servicio).
 
 **8.** Cual es la diferencia entre `>` y `>>` en la redireccion de salida?
 
-> `>` sobrescribe el archivo destino (lo crea si no existe, lo trunca si existe). `>>` agrega al final del archivo sin borrar su contenido previo. En el script se usa `>>` para el log porque queremos acumular registros, no reemplazarlos.
 
 ---
 
@@ -453,16 +444,3 @@ sudo ./gestion_usuarios.sh
 
 ---
 
-## Criterios de Evaluacion
-
-| Criterio | Puntos |
-|----------|--------|
-| Parte teorica: respuestas correctas (8 preguntas) | 40 |
-| Script funcional con menu interactivo | 15 |
-| Uso correcto de funciones | 10 |
-| Validacion de entradas y manejo de errores | 10 |
-| Uso de variables, condicionales y bucles | 10 |
-| Generacion de log | 5 |
-| Formato de salida legible (colores, tablas) | 5 |
-| Comentarios y organizacion del codigo | 5 |
-| **Total** | **100** |
