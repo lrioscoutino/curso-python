@@ -18,6 +18,3 @@ Tutorial teorico-practico de seguridad en Ubuntu para administradores de sistema
 
 1. Sigue los modulos en orden secuencial
 2. Lee la seccion teorica antes de la practica
-3. Ejecuta los comandos en una VM de pruebas (nunca en produccion sin entender lo que hacen)
-4. Completa los ejercicios practicos de cada modulo
-5. Termina con el proyecto final del Modulo 10
