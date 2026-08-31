@@ -27,8 +27,13 @@ unidad_1/
 | `05_patron_observer_signals.py` | Observer — signals de Django simuladas (post_save) |
 | `06_patron_singleton_settings.py` | Singleton — `django.conf.settings` simulado |
 | `07_patron_service_layer.py` | Service Layer — lógica de negocio fuera de la vista |
+| `08_django_singleton_real.py` | Singleton — `django.conf.settings` con código Django **real** (no ejecutable sin proyecto) |
+| `09_django_mvt_real.py` | MVT — Modelo/Vista/Template/urls.py **reales** de un CRUD de Artículo (no ejecutable sin proyecto) |
+| `10_django_factory_manager_real.py` | Factory Method — Manager + QuerySet personalizados **reales** con el ORM (no ejecutable sin proyecto) |
 
-Correr cualquiera:
+Los archivos `08`–`10` usan código Django auténtico (import real de `django.db.models`, `django.conf.settings`, etc.) en vez de simulaciones — por eso no corren standalone con `python3 archivo.py`: el código está comentado con docstrings triple-quote, documentado por bloques (`models.py`, `views.py`, `urls.py`, template), pensado para copiar dentro de un proyecto Django real o leer como referencia.
+
+Correr los ejemplos standalone (01–07):
 
 ```bash
 python3 ejemplos/03_patron_factory_manager.py
