@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Git hook: commit-msg
+#
+# Rechaza un commit cuyo mensaje no siga el formato Conventional Commits
+# (ver 03_mensajes_de_commit.md). Instalar copiándolo a .git/hooks/commit-msg
+# y dándole permiso de ejecución:
+#
+#   cp ejemplos/hooks/commit-msg .git/hooks/commit-msg
+#   chmod +x .git/hooks/commit-msg
+
+COMMIT_MSG_FILE="$1"
+FIRST_LINE="$(head -n1 "$COMMIT_MSG_FILE")"
+
+# tipo(scope opcional)!: descripción   — el ! es opcional (BREAKING CHANGE)
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9_-]+\))?!?: .{1,72}$'
+
+if [[ "$FIRST_LINE" =~ ^Merge ]] || [[ "$FIRST_LINE" =~ ^Revert ]]; then
+    # Merges y reverts generados automáticamente por Git tienen su propio
+    # formato — no los validamos contra Conventional Commits.
+    exit 0
+fi
+
+if ! [[ "$FIRST_LINE" =~ $PATTERN ]]; then
+    echo "❌ El mensaje de commit no sigue Conventional Commits." >&2
+    echo "" >&2
+    echo "   Recibido: $FIRST_LINE" >&2
+    echo "" >&2
+    echo "   Formato esperado: <tipo>(<scope opcional>): <descripción>" >&2
+    echo "   Tipos válidos: feat fix docs style refactor perf test build ci chore revert" >&2
+    echo "" >&2
+    echo "   Ejemplo: feat(auth): agrega login con Google OAuth" >&2
+    exit 1
+fi
+
+exit 0

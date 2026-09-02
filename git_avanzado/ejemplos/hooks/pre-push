@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Git hook: pre-push
+#
+# Rechaza el push si el nombre de la rama actual no sigue la convención
+# tipo/descripcion-en-kebab-case (ver 05_nombres_de_ramas.md). Instalar:
+#
+#   cp ejemplos/hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+
+PROTECTED_BRANCHES='^(main|master|develop)$'
+VALID_PATTERN='^(feature|fix|hotfix|release|chore|docs|refactor|spike|experiment)/[A-Za-z0-9]+([.-][A-Za-z0-9]+)*$'
+
+BRANCH="$(git symbolic-ref --short HEAD)"
+
+if [[ "$BRANCH" =~ $PROTECTED_BRANCHES ]]; then
+    # main/master/develop no siguen el patrón tipo/descripcion — se permiten tal cual
+    exit 0
+fi
+
+if ! [[ "$BRANCH" =~ $VALID_PATTERN ]]; then
+    echo "❌ El nombre de rama '$BRANCH' no sigue la convención." >&2
+    echo "" >&2
+    echo "   Formato esperado: <tipo>/<descripcion-en-kebab-case>" >&2
+    echo "   Tipos válidos: feature fix hotfix release chore docs refactor spike experiment" >&2
+    echo "" >&2
+    echo "   Ejemplo: feature/PROJ-482-login-google-oauth" >&2
+    exit 1
+fi
+
+exit 0

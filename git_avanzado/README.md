@@ -11,6 +11,8 @@ Curso complementario a [`curso_git`](../curso_git/README.md) (que cubre los coma
 - [05_nombres_de_ramas.md](05_nombres_de_ramas.md) — Convenciones de naming para tracking automático
 - [06_multiples_despliegues.md](06_multiples_despliegues.md) — Ramas por entorno, tags, releases, hotfixes, cherry-pick, versionado semántico
 - [07_ejercicios.md](07_ejercicios.md) — Ejercicios integradores con solución
+- [ejemplos/](ejemplos/README.md) — Scripts ejecutables (uno por tema) + hooks de Git reutilizables (`commit-msg`, `pre-push`)
+- [practica_tutorial.md](practica_tutorial.md) — Tutorial paso a paso a mano en tu terminal: de cero a un flujo de release completo con hotfix
 
 ## A quién le sirve este curso
 
