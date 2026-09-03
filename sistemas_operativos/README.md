@@ -100,5 +100,11 @@ Las **llamadas al sistema (system calls)** son funciones que permiten a los prog
 -   **Gestión de memoria:** `malloc()`, `free()`
 -   **Gestión de dispositivos:** `ioctl()`, `read()`, `write()`
 
+---
+
+## Práctica complementaria
+
+- [practica_docker_instalacion_puesta_en_marcha.md](practica_docker_instalacion_puesta_en_marcha.md) — Instalación de Docker y puesta en marcha paso a paso, ligada a los conceptos de esta unidad (procesos, virtualización a nivel de SO, namespaces y cgroups).
+
 
 > Written with [StackEdit](https://stackedit.io/).
