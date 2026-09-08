@@ -199,4 +199,7 @@ docker ps -a                         # confirma que no quedan contenedores activ
 
 ## Siguientes pasos
 
-Esta práctica cubre justo "instalación → primera puesta en marcha". Para Dockerfile avanzado, volúmenes y persistencia de datos, redes entre contenedores, Docker Compose (aplicaciones multi-contenedor) y ejercicios adicionales resueltos, continúa con [`tutorial_docker/README.md`](../tutorial_docker/README.md).
+Esta práctica cubre justo "instalación → primera puesta en marcha". Dos caminos para seguir:
+
+- [`practica_floci_servicios_cloud_locales.md`](practica_floci_servicios_cloud_locales.md) — usar esta misma instalación de Docker para levantar un emulador de servicios cloud (S3, DynamoDB) y practicar administración de "servidor" sin cuenta real.
+- [`tutorial_docker/README.md`](../tutorial_docker/README.md) — para Dockerfile avanzado, volúmenes y persistencia de datos, redes entre contenedores, Docker Compose y ejercicios adicionales resueltos.
