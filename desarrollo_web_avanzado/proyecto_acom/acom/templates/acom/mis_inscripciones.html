@@ -1,0 +1,7 @@
+<h1>Mis actividades complementarias</h1>
+<p>Créditos acumulados: {{ creditos_totales|floatformat:2 }} / 5.00 — faltan {{ creditos_faltantes|floatformat:2 }}</p>
+<ul>
+{% for inscripcion in inscripciones %}
+  <li>{{ inscripcion.actividad.nombre }} — {{ inscripcion.get_estado_display }}</li>
+{% endfor %}
+</ul>

@@ -1,0 +1,10 @@
+<h1>Actividades complementarias disponibles</h1>
+<ul>
+{% for actividad in actividades %}
+  <li>
+    {{ actividad.nombre }} — {{ actividad.get_categoria_display }} ({{ actividad.creditos_valor }} créditos)
+    <a href="{% url 'acom:inscribirse' actividad.id %}">Inscribirme</a>
+  </li>
+{% endfor %}
+</ul>
+<a href="{% url 'acom:mis_inscripciones' %}">Ver mis inscripciones</a>

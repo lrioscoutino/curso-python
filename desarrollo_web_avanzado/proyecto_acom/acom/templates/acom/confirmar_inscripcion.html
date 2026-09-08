@@ -1,0 +1,6 @@
+<h1>Confirmar inscripción</h1>
+<p>{{ actividad.nombre }} — {{ actividad.creditos_valor }} créditos</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Inscribirme</button>
+</form>
