@@ -364,66 +364,66 @@ crontab -e
 
 **Explicación:** Se ejecuta cada 6 horas (*/6).
 
-### Práctica 7: Notificaciones automáticas a un canal de Microsoft Teams
+### Práctica 7: Reporte automático del servidor para compartir en Teams
 
-**Objetivo:** Programar con cron un reporte periódico del servidor que se publique solo, como mensaje, en un canal de Microsoft Teams — la forma más simple de compartir con el equipo lo que un cron job hizo, sin que alguien tenga que entrar por SSH a revisar un log.
+**Objetivo:** Programar con cron la generación automática de un reporte del servidor, listo para subir manualmente a un canal de Microsoft Teams — sin depender de ninguna API, webhook o conector (no todos los espacios de trabajo de Teams tienen esos permisos habilitados).
 
-**Por qué esta práctica:** todas las anteriores escriben a un archivo local que solo tú ves. Aquí el resultado de la tarea programada llega directo a donde está el equipo — la misma idea detrás de las alertas de un pipeline de CI/CD o un monitoreo de producción real.
+**Por qué esta práctica:** todas las anteriores escriben a un log que solo tú ves en tu propia máquina. Aquí cron hace la parte repetitiva (recolectar los datos, darles formato, fecha en el nombre del archivo) y deja el archivo listo — compartirlo es un solo paso manual: arrastrarlo al canal de Teams (o subirlo a la pestaña "Archivos" del canal).
 
-**Paso 1:** Crear un Incoming Webhook en el canal de Teams
-
-1. En Microsoft Teams, entra al canal donde quieres recibir el reporte.
-2. Clic en los tres puntos (`⋯`) junto al nombre del canal → **Conectores** (o **Workflows**, según la versión de Teams).
-3. Busca **Incoming Webhook** → **Configurar/Agregar**.
-4. Dale un nombre (ej. "Reportes del servidor"), opcionalmente sube un ícono, y confirma.
-5. Copia la **URL del webhook** que te entrega — es una URL larga y secreta; trátala como una contraseña, cualquiera con esa URL puede publicar en el canal.
-
-**Paso 2:** Crear el script de reporte
+**Paso 1:** Crear el script de reporte
 
 ```bash
 mkdir -p ~/scripts
 
-cat > ~/scripts/reporte_teams.sh << 'EOF'
+cat > ~/scripts/reporte_equipo.sh << 'EOF'
 #!/bin/bash
-WEBHOOK_URL="https://tuempresa.webhook.office.com/webhookb2/TU-URL-AQUI"
+DESTINO="$HOME/reportes_equipo"
+FECHA=$(date '+%Y-%m-%d')
+ARCHIVO="$DESTINO/reporte_${FECHA}.txt"
+
+mkdir -p "$DESTINO"
 
 USO_DISCO=$(df / | awk 'NR==2 {print $5}')
 MEM_LIBRE=$(free -h | awk 'NR==2{print $7}')
 PROCESOS=$(ps aux | wc -l)
-FECHA=$(date '+%Y-%m-%d %H:%M')
 
-MENSAJE="**Reporte diario del servidor** — ${FECHA}\n\n- Uso de disco: ${USO_DISCO}\n- Memoria libre: ${MEM_LIBRE}\n- Procesos activos: ${PROCESOS}"
+cat > "$ARCHIVO" << REPORT
+Reporte del servidor — $(date '+%Y-%m-%d %H:%M')
+================================================
+Uso de disco:      $USO_DISCO
+Memoria libre:     $MEM_LIBRE
+Procesos activos:  $PROCESOS
+REPORT
 
-curl -s -H "Content-Type: application/json" \
-     -d "{\"text\": \"${MENSAJE}\"}" \
-     "$WEBHOOK_URL"
+echo "Reporte generado: $ARCHIVO"
 EOF
 
-chmod +x ~/scripts/reporte_teams.sh
+chmod +x ~/scripts/reporte_equipo.sh
 ```
 
-> Reemplaza `WEBHOOK_URL` con la URL real que copiaste en el Paso 1. **Nunca subas ese script a un repositorio público con la URL adentro** — es una credencial. Si vas a compartir el repo, muévela a una variable de entorno (`WEBHOOK_URL="$TEAMS_WEBHOOK_URL"`) cargada desde un archivo `.env` que NO se sube a git.
-
-**Paso 3:** Probar el script a mano antes de programarlo
+**Paso 2:** Probar el script a mano antes de programarlo
 
 ```bash
-~/scripts/reporte_teams.sh
+~/scripts/reporte_equipo.sh
+cat ~/reportes_equipo/reporte_$(date +%Y-%m-%d).txt
 ```
 
-**Checkpoint:** el mensaje debe aparecer en el canal de Teams en segundos. Si no aparece, revisa que la URL se copió completa (suelen ser muy largas) y que el conector sigue activo en el canal.
+**Checkpoint:** debe existir el archivo con los tres datos (disco, memoria, procesos) y la fecha correcta.
 
-**Paso 4:** Programar el reporte diario
+**Paso 3:** Programar la generación diaria
 
 ```bash
 crontab -e
 
-# Agregar (reporte todos los días a las 8:00 AM):
-0 8 * * * /home/$USER/scripts/reporte_teams.sh >> $HOME/logs/reporte_teams.log 2>&1
+# Agregar (genera el reporte todos los días a las 8:00 AM):
+0 8 * * * /home/$USER/scripts/reporte_equipo.sh >> $HOME/logs/reporte_equipo.log 2>&1
 ```
 
-**Explicación:** cron dispara el script a las 8:00 a.m.; el script arma el mensaje con datos reales del sistema y lo publica en Teams vía HTTP POST — el mismo mecanismo que usan las integraciones de CI/CD para avisar "el build falló" o "el deploy terminó".
+**Paso 4:** Compartirlo en Teams
 
-**Variante — solo avisar cuando algo está mal:** combina esta práctica con la de "Monitor de Espacio en Disco" (arriba): en vez de reportar siempre, que el `curl` a Teams solo se dispare dentro del `if [ "$USO" -gt "$UMBRAL" ]`, para no saturar el canal con mensajes de "todo bien" cada hora.
+Cada mañana, entra a `~/reportes_equipo/`, toma el archivo del día y súbelo al canal — ya sea arrastrándolo a la conversación o subiéndolo a la pestaña **Archivos** del canal. Cron hizo el trabajo repetitivo (juntar los datos, con la fecha correcta, todos los días a la misma hora); a ti solo te queda un clic.
+
+**Variante — un solo archivo acumulado:** en vez de un archivo por día, usa `>>` en lugar de `>` dentro del script para ir agregando cada reporte al final de un mismo archivo (`historial_reportes.txt`) — así subes un solo archivo a Teams una vez por semana, con el historial completo de esos días.
 
 ## Verificación y Troubleshooting
 
