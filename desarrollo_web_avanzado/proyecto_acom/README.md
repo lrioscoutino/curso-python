@@ -1,6 +1,8 @@
 # Proyecto integrador: Sistema de gestión de ACOM (Actividades Complementarias — TecNM)
 
-Práctica de proyecto completo para Desarrollo Web Avanzado: un sistema real, con reglas de negocio reales, que ejercita todo lo visto en las Unidades 1 y 3 (buenas prácticas, patrones de diseño, MVT, instalación/estructura de un framework) sobre un caso de uso reconocible para cualquier estudiante del TecNM.
+Proyecto para Desarrollo Web Avanzado: **lo construyen los alumnos** desde cero. Ejercita lo visto en las Unidades 1 y 3 (buenas prácticas, patrones de diseño, MVT, instalación y estructura de un framework) sobre un caso de uso reconocible para cualquier estudiante del TecNM.
+
+Este documento es el enunciado: describe el problema, qué debe hacer el sistema y cómo se evalúa. No incluye código base.
 
 ## El problema real que resuelve
 
@@ -24,7 +26,7 @@ Estudiante                Responsable de la              Departamento
     │        Créditos visibles en su expediente (SITEC/SII)       │
 ```
 
-Este proyecto modela exactamente ese flujo: **inscripción → evaluación → constancia → validación y registro de créditos**, con un límite de 5 créditos y reglas de quién puede hacer qué en cada paso.
+El sistema debe modelar ese flujo: **inscripción → evaluación → constancia → validación y registro de créditos**, con un límite de 5 créditos y reglas de quién puede hacer qué en cada paso.
 
 ## Categorías de actividad (según el modelo oficial del TecNM)
 
@@ -37,29 +39,18 @@ Este proyecto modela exactamente ese flujo: **inscripción → evaluación → c
 | Tutorías y asesorías | Tutor entre pares, apoyo académico institucional |
 | Impacto social y ambiente | Protección ambiental, brigadas, actividades comunitarias |
 
-## Estructura del proyecto
+## Requisitos funcionales
 
-```
-proyecto_acom/
-└── acom/                      # la app Django — se integra a cualquier proyecto existente
-    ├── models.py                # ActividadComplementaria, Inscripcion, Constancia, RegistroCreditos
-    ├── exceptions.py              # TransicionInvalidaError, LimiteCreditosError
-    ├── services.py                 # InscripcionService, CreditosService — Service Layer (Unidad 1)
-    ├── signals.py                    # inscripcion_validada — Observer (Unidad 1)
-    ├── receivers.py                    # reacciona a la signal (ej. notificar)
-    ├── apps.py                          # registra los receivers en ready()
-    ├── forms.py                          # EvaluacionForm
-    ├── views.py                           # 5 vistas — MVT (Unidad 1)
-    ├── urls.py                             # app_name="acom"
-    ├── admin.py                             # gestión desde /admin/
-    ├── templates/acom/                       # 5 templates mínimos
-    ├── test_services.py                       # 4 tests de la lógica de negocio
-    └── test_views.py                           # 1 test del flujo HTTP completo
-```
+1. **Actividades:** el Departamento Académico da de alta actividades con nombre, categoría, descripción, responsable, valor en créditos y estado activa/inactiva.
+2. **Inscripción:** el estudiante ve las actividades activas y se inscribe. No puede inscribirse dos veces a la misma actividad.
+3. **Evaluación:** el responsable de la actividad la evalúa (aprobado o rechazado, con observaciones). Solo ese responsable puede hacerlo.
+4. **Constancia:** para una inscripción aprobada se emite una constancia con folio único (por ejemplo, `ACOM-000001`).
+5. **Validación:** el Departamento Académico valida la constancia y registra los créditos en el expediente del estudiante.
+6. **Consulta:** el estudiante ve sus inscripciones, los créditos acumulados y cuántos le faltan.
 
-Todo el código de esta carpeta fue **verificado ejecutándolo**: `makemigrations`, `migrate`, y los 5 tests (`test_services.py` + `test_views.py`) pasan (`OK`, 5/5) contra una base de datos real en un proyecto Django 5.0 de prueba.
+## Modelo de datos mínimo
 
-## Modelo de datos
+Punto de partida; los alumnos pueden ampliarlo y justificar los cambios.
 
 ```
 ActividadComplementaria
@@ -75,16 +66,25 @@ Inscripcion
 └── constraint: un estudiante no puede inscribirse dos veces a la misma actividad
 
 Constancia (1 a 1 con Inscripcion)
-├── folio (único, autogenerado: ACOM-000001)
+├── folio (único, autogenerado)
 ├── fecha_emision, emitida_por (FK User)
 
 RegistroCreditos (1 a 1 con Inscripcion)
 ├── creditos_otorgados, fecha_registro, validado_por (FK User)
 ```
 
-## Arquitectura por capas (propuesta de evolución)
+## Reglas de negocio
 
-El código actual separa modelos, servicios y vistas, pero la autorización, la concurrencia y las reglas de estado siguen mezcladas en `services.py` y `views.py`. Esta sección propone formalizarlo en **cuatro capas** con una regla de dependencia: cada capa solo importa de las de abajo, y el dominio no importa nada de Django. Es una guía de diseño y refactor: el código de esta carpeta todavía **no** está organizado así.
+- Solo el **responsable de la actividad** puede evaluarla.
+- No se puede emitir constancia sin haber evaluado y aprobado primero.
+- No se puede validar ni registrar créditos sin constancia emitida.
+- Si el estudiante **ya alcanzó los 5.00 créditos**, un nuevo registro se rechaza con un error propio.
+- Cada transición de estado inválida debe fallar con una excepción propia, no con un `if` suelto en la vista.
+- Al validar y registrar, el sistema avisa mediante una señal (Observer) a quien quiera reaccionar, por ejemplo para notificar al estudiante, sin que el servicio dependa de ello.
+
+## Arquitectura por capas (requisito de diseño)
+
+El proyecto debe organizarse en **cuatro capas** con una regla de dependencia: cada capa solo importa de las de abajo, y el dominio no importa nada de Django.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -98,7 +98,7 @@ El código actual separa modelos, servicios y vistas, pero la autorización, la 
 └──────────────────────────────────────────────┘
 ```
 
-### Estructura de carpetas propuesta
+### Estructura de carpetas sugerida
 
 ```
 acom/
@@ -122,14 +122,16 @@ acom/
 
 ### Responsabilidad de cada capa
 
-| Capa | Responsabilidad | De dónde sale hoy |
-|---|---|---|
-| **Dominio** | Máquina de estados como dato y reglas puras | Los `if estado != ...` repetidos en `services.py` |
-| **Infraestructura** | Lecturas en `selectors.py`, escrituras por ORM | `CreditosService.total_validado` y consultas en las vistas |
-| **Aplicación** | Un caso de uso por función, con `atomic()`, `select_for_update` y comprobación de permisos | `services.py` actual |
-| **Presentación** | Traducir HTTP a llamadas y excepciones a mensajes | `views.py`, hoy con `render` duplicado |
+| Capa | Responsabilidad |
+|---|---|
+| **Dominio** | Máquina de estados como dato y reglas puras, sin ORM |
+| **Infraestructura** | Lecturas en `selectors.py`, escrituras por ORM, signals y receivers |
+| **Aplicación** | Un caso de uso por función, con `atomic()`, `select_for_update` y comprobación de permisos |
+| **Presentación** | Traducir HTTP a llamadas y las excepciones a mensajes para el usuario |
 
 ### Idea central: las reglas como dato, los casos de uso como orquesta
+
+Ilustración de la idea, no código para copiar:
 
 ```python
 # domain/estados.py — la regla es un dato, no ifs dispersos
@@ -157,77 +159,51 @@ def validar_y_registrar(inscripcion_id, usuario):
     transaction.on_commit(lambda: inscripcion_validada.send(...))
 ```
 
-### Qué problemas resuelve
+### Trampas que la arquitectura debe evitar
 
-- **Autorización:** queda centralizada en `permisos.py` y se llama desde el servicio, no desde cada vista. Hoy cualquier usuario con sesión puede abrir `panel_departamento` y registrar créditos.
-- **Concurrencia:** `select_for_update` y `on_commit` viven en un solo lugar. Hoy dos validaciones simultáneas pueden sobrepasar el límite de créditos, y la signal se dispara aunque falle el commit.
-- **Pruebas:** las reglas del dominio se prueban sin base de datos (`test_domain.py`).
-- **Manejo de errores:** las vistas capturan `AcomError`, clase base de las excepciones propias, y desaparece el bloque de `render` duplicado. Hoy una doble inscripción devuelve un 500.
+- **Autorización:** debe centralizarse en `permisos.py` y llamarse desde el servicio, no desde cada vista. Un estudiante no debe poder validar créditos.
+- **Concurrencia:** dos validaciones simultáneas no deben sobrepasar el límite de créditos. Usa `select_for_update`, y dispara la señal con `transaction.on_commit`.
+- **Manejo de errores:** una doble inscripción no debe devolver un 500. Las vistas capturan `AcomError`, clase base de las excepciones propias.
 
-### Compromisos
-
-Para 4 modelos y 5 vistas es más estructura de la necesaria. Se justifica aquí porque el objetivo es practicar arquitectura. Si quieres menos cambios, solo `domain/estados.py` y `selectors.py` aportan la mayor parte del valor.
-
-### Actividad sugerida
-
-Refactoriza el proyecto a estas cuatro capas por pasos, con las pruebas actuales pasando entre uno y otro:
-
-1. Extrae `domain/estados.py` y sustituye los `if` de `services.py`.
-2. Mueve las lecturas a `selectors.py`.
-3. Divide `services.py` en `services/inscripciones.py` y `services/permisos.py`, con `select_for_update` y `on_commit`.
-4. Adelgaza las vistas para que capturen `AcomError`.
-5. Agrega pruebas de autorización, doble inscripción y rechazo.
-
-## Reglas de negocio (en `services.py`, no en las vistas — Service Layer)
-
-- Solo el **responsable de la actividad** (`actividad.responsable`) puede evaluarla — cualquier otro usuario lo intenta y `InscripcionService.evaluar` lanza `TransicionInvalidaError`.
-- No se puede emitir constancia sin haber evaluado y aprobado primero.
-- No se puede validar/registrar créditos sin constancia emitida.
-- Si el estudiante **ya alcanzó los 5.00 créditos**, un nuevo intento de registro lanza `LimiteCreditosError` — el expediente no crece indefinidamente.
-- Al validar y registrar, se dispara la signal `inscripcion_validada` (Observer) — el receptor actual solo loggea, pero ahí engancharías un correo real, una notificación push, o la sincronización con SITEC/SII sin tocar `services.py`.
-
-## Cómo montarlo en un proyecto Django real
+## Cómo montarlo
 
 ```bash
 django-admin startproject config .
-python manage.py startapp acom     # y sustituye su contenido por el de esta carpeta
+python manage.py startapp acom
 
-# En config/settings.py:
-#   INSTALLED_APPS += ["acom"]
-
-# En config/urls.py:
-#   from django.urls import include, path
-#   urlpatterns += [path("acom/", include("acom.urls"))]
+# En config/settings.py:  INSTALLED_APPS += ["acom"]
+# En config/urls.py:      path("acom/", include("acom.urls"))
 
 python manage.py makemigrations acom
 python manage.py migrate
 python manage.py createsuperuser        # para entrar a /admin/ y crear actividades de prueba
-
-python manage.py test acom              # deben pasar los 5 tests
+python manage.py test acom
 python manage.py runserver
 ```
 
 Flujo manual para probarlo en el navegador:
 
-1. Entra a `/admin/` y crea un `User` responsable, un `User` de departamento, y una `ActividadComplementaria`.
-2. Inicia sesión como estudiante (o usa otra pestaña/incógnito) y entra a `/acom/` — inscríbete.
-3. Inicia sesión como el responsable y entra a `/acom/responsable/<id>/` — evalúa y emite la constancia.
-4. Inicia sesión como el usuario de departamento y entra a `/acom/departamento/<id>/` — valida y registra los créditos.
-5. Vuelve a `/acom/mis-inscripciones/` como estudiante — verás el crédito reflejado.
+1. Entra a `/admin/` y crea un usuario responsable, un usuario de departamento y una actividad.
+2. Como estudiante, entra a `/acom/` e inscríbete.
+3. Como responsable, evalúa y emite la constancia.
+4. Como departamento, valida y registra los créditos.
+5. Vuelve a `/acom/mis-inscripciones/` como estudiante y verifica el crédito reflejado.
 
-## Actividades de aprendizaje (extender el proyecto)
+## Extensiones opcionales
 
-- Agrega un campo `limite_cupo` a `ActividadComplementaria` y haz que `InscripcionService.inscribir` lance una excepción propia cuando ya se alcanzó el cupo.
-- Agrega una vista de reporte para el Departamento Académico: lista de todos los estudiantes con sus créditos acumulados y cuántos les faltan (usa `CreditosService`).
-- Convierte `panel_responsable` y `panel_departamento` a Class-Based Views, comparando la legibilidad contra las funciones actuales.
-- Agrega un permiso de Django (`acom.can_validate_credits`) y restringe `panel_departamento` a usuarios con ese permiso en vez de solo `@login_required`.
-- Escribe un nuevo receptor para `inscripcion_validada` que envíe un correo real (usa `django.core.mail.send_mail`, con backend de consola en desarrollo).
+- Agrega un campo `limite_cupo` a la actividad y una excepción propia cuando se alcance.
+- Agrega una vista de reporte para el Departamento Académico: estudiantes con sus créditos acumulados y los que les faltan.
+- Convierte los paneles a Class-Based Views y compara la legibilidad contra las funciones.
+- Agrega un permiso de Django (`acom.can_validate_credits`) y restringe el panel del departamento con él.
+- Escribe un receptor de la señal que envíe un correo real (backend de consola en desarrollo).
+- Agrega un modelo `Periodo` (semestre) y un historial de transiciones de estado.
 
 ## Evaluación sugerida
 
 | Evidencia | Qué valora |
 |---|---|
-| Tests pasando (`test_services.py` + `test_views.py`) | La lógica de negocio y el flujo HTTP funcionan de extremo a extremo |
+| Pruebas pasando (dominio, servicios y vistas) | La lógica de negocio y el flujo HTTP funcionan de extremo a extremo |
+| Cobertura de casos límite: autorización, doble inscripción, rechazo, límite de créditos | Pruebas más allá del camino feliz |
 | Diagrama de estados de `Inscripcion` dibujado por el estudiante | Comprensión del flujo de tres responsables |
-| Extensión con cupo o reporte de créditos | Capacidad de extender el Service Layer sin romper lo existente |
+| Respeto de la regla de dependencia entre capas | Arquitectura, no solo funcionalidad |
 | Explicación oral de dónde vive cada patrón (MVT, Service Layer, Observer) | Conexión explícita con la Unidad 1 |
