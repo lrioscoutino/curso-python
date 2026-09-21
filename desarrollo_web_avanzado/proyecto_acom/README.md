@@ -82,6 +82,102 @@ RegistroCreditos (1 a 1 con Inscripcion)
 ├── creditos_otorgados, fecha_registro, validado_por (FK User)
 ```
 
+## Arquitectura por capas (propuesta de evolución)
+
+El código actual separa modelos, servicios y vistas, pero la autorización, la concurrencia y las reglas de estado siguen mezcladas en `services.py` y `views.py`. Esta sección propone formalizarlo en **cuatro capas** con una regla de dependencia: cada capa solo importa de las de abajo, y el dominio no importa nada de Django. Es una guía de diseño y refactor: el código de esta carpeta todavía **no** está organizado así.
+
+```
+┌──────────────────────────────────────────────┐
+│ 1. PRESENTACIÓN   views · forms · templates  │  HTTP, validación de entrada
+├──────────────────────────────────────────────┤
+│ 2. APLICACIÓN     services/ (casos de uso)   │  orquesta, transacciones, permisos
+├──────────────────────────────────────────────┤
+│ 3. DOMINIO        domain/ (reglas puras)     │  estados, límites, excepciones
+├──────────────────────────────────────────────┤
+│ 4. INFRAESTRUCTURA models · selectors · signals · receivers │  ORM, correo, SITEC
+└──────────────────────────────────────────────┘
+```
+
+### Estructura de carpetas propuesta
+
+```
+acom/
+├── domain/
+│   ├── estados.py         # EstadoInscripcion + TRANSICIONES permitidas (dict)
+│   ├── reglas.py          # puede_evaluar(), excede_limite(): funciones puras
+│   └── exceptions.py      # AcomError (base), TransicionInvalidaError, LimiteCreditosError
+├── models.py              # solo campos, constraints y __str__
+├── selectors.py           # lecturas: inscripciones_de(), total_validado()
+├── services/
+│   ├── inscripciones.py   # inscribir, evaluar, emitir_constancia, validar_y_registrar
+│   └── permisos.py        # quién puede ejecutar cada caso de uso
+├── signals.py / receivers.py
+├── views/                 # delgadas: parsean, llaman al servicio, renderizan
+├── forms.py
+└── tests/
+    ├── test_domain.py     # sin base de datos
+    ├── test_services.py
+    └── test_views.py
+```
+
+### Responsabilidad de cada capa
+
+| Capa | Responsabilidad | De dónde sale hoy |
+|---|---|---|
+| **Dominio** | Máquina de estados como dato y reglas puras | Los `if estado != ...` repetidos en `services.py` |
+| **Infraestructura** | Lecturas en `selectors.py`, escrituras por ORM | `CreditosService.total_validado` y consultas en las vistas |
+| **Aplicación** | Un caso de uso por función, con `atomic()`, `select_for_update` y comprobación de permisos | `services.py` actual |
+| **Presentación** | Traducir HTTP a llamadas y excepciones a mensajes | `views.py`, hoy con `render` duplicado |
+
+### Idea central: las reglas como dato, los casos de uso como orquesta
+
+```python
+# domain/estados.py — la regla es un dato, no ifs dispersos
+TRANSICIONES = {
+    EstadoInscripcion.INSCRITO: {EVALUADO_APROBADO, EVALUADO_RECHAZADO},
+    EstadoInscripcion.EVALUADO_APROBADO: {CONSTANCIA_EMITIDA},
+    EstadoInscripcion.CONSTANCIA_EMITIDA: {VALIDADO},
+}
+
+def validar_transicion(actual, nuevo):
+    if nuevo not in TRANSICIONES.get(actual, set()):
+        raise TransicionInvalidaError(f"{actual} → {nuevo} no permitido")
+```
+
+```python
+# services/inscripciones.py — el caso de uso coordina las capas
+@transaction.atomic
+def validar_y_registrar(inscripcion_id, usuario):
+    permisos.exigir(usuario, "acom.can_validate_credits")
+    insc = Inscripcion.objects.select_for_update().get(pk=inscripcion_id)
+    validar_transicion(insc.estado, EstadoInscripcion.VALIDADO)
+    if reglas.excede_limite(selectors.total_validado(insc.estudiante)):
+        raise LimiteCreditosError(...)
+    ...
+    transaction.on_commit(lambda: inscripcion_validada.send(...))
+```
+
+### Qué problemas resuelve
+
+- **Autorización:** queda centralizada en `permisos.py` y se llama desde el servicio, no desde cada vista. Hoy cualquier usuario con sesión puede abrir `panel_departamento` y registrar créditos.
+- **Concurrencia:** `select_for_update` y `on_commit` viven en un solo lugar. Hoy dos validaciones simultáneas pueden sobrepasar el límite de créditos, y la signal se dispara aunque falle el commit.
+- **Pruebas:** las reglas del dominio se prueban sin base de datos (`test_domain.py`).
+- **Manejo de errores:** las vistas capturan `AcomError`, clase base de las excepciones propias, y desaparece el bloque de `render` duplicado. Hoy una doble inscripción devuelve un 500.
+
+### Compromisos
+
+Para 4 modelos y 5 vistas es más estructura de la necesaria. Se justifica aquí porque el objetivo es practicar arquitectura. Si quieres menos cambios, solo `domain/estados.py` y `selectors.py` aportan la mayor parte del valor.
+
+### Actividad sugerida
+
+Refactoriza el proyecto a estas cuatro capas por pasos, con las pruebas actuales pasando entre uno y otro:
+
+1. Extrae `domain/estados.py` y sustituye los `if` de `services.py`.
+2. Mueve las lecturas a `selectors.py`.
+3. Divide `services.py` en `services/inscripciones.py` y `services/permisos.py`, con `select_for_update` y `on_commit`.
+4. Adelgaza las vistas para que capturen `AcomError`.
+5. Agrega pruebas de autorización, doble inscripción y rechazo.
+
 ## Reglas de negocio (en `services.py`, no en las vistas — Service Layer)
 
 - Solo el **responsable de la actividad** (`actividad.responsable`) puede evaluarla — cualquier otro usuario lo intenta y `InscripcionService.evaluar` lanza `TransicionInvalidaError`.
