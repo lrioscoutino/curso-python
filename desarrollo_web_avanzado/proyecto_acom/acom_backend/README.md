@@ -7,13 +7,45 @@ Sistema de Actividades Complementarias (TecNM) organizado en **cuatro capas**. E
 ```bash
 uv sync
 uv run python manage.py migrate
-uv run python manage.py test acom        # 23 pruebas
-uv run ruff check --no-fix acom config
+uv run python manage.py test              # 30 pruebas (24 de acom + 6 de api)
+uv run ruff check --no-fix acom api config
 uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
 
 Para probar el flujo en el navegador, entra a `/admin/`, crea un responsable, un usuario de departamento (dale el permiso *Puede validar constancias y registrar créditos*) y una actividad. Después usa `/acom/`.
+
+## API REST (`api/`) — una segunda capa de presentación
+
+La misma lógica de negocio (`acom.services`, `acom.selectors`) también se expone como API REST versionada — la prueba de que la capa de Aplicación no sabe ni le importa si quien la llama es un navegador con HTML o un cliente JSON. Nada en `services/` ni `domain/` cambió para que esto funcionara.
+
+- **Base:** `/api/v1/` — un futuro cambio incompatible viviría en `/api/v2/`, sin tocar `v1`.
+- **Documentación interactiva:** `/api/docs/` (Swagger UI) y `/api/redoc/` (Redoc) — generadas automáticamente por `drf-spectacular` a partir del código, nunca escritas a mano.
+- **Autenticación:** JWT (`djangorestframework-simplejwt`) — `POST /api/v1/auth/token/` con `username`/`password` devuelve `access`/`refresh`.
+
+```bash
+# 1. Login — obtener el token
+curl -X POST http://localhost:8000/api/v1/auth/token/ \
+     -H "Content-Type: application/json" \
+     -d '{"username": "tu_usuario", "password": "tu_password"}'
+
+# 2. Usar el token en cada petición protegida
+curl http://localhost:8000/api/v1/actividades/ \
+     -H "Authorization: Bearer <access_token>"
+```
+
+| Endpoint | Método | Rol | Delegación |
+|---|---|---|---|
+| `/api/v1/actividades/` | GET | Cualquiera autenticado | `selectors.actividades_activas` |
+| `/api/v1/actividades/<id>/inscribirse/` | POST | Estudiante | `services.inscripciones.inscribir` |
+| `/api/v1/mis-inscripciones/` | GET | Estudiante | `selectors.inscripciones_de` |
+| `/api/v1/mis-inscripciones/resumen/` | GET | Estudiante | `selectors.total_validado` + `domain.reglas.faltantes` |
+| `/api/v1/responsable/inscripciones/<id>/` | GET | Responsable de la actividad | `selectors.inscripcion_de_responsable` |
+| `/api/v1/responsable/inscripciones/<id>/evaluar/` | POST | Responsable | `services.inscripciones.evaluar` |
+| `/api/v1/responsable/inscripciones/<id>/emitir-constancia/` | POST | Responsable | `services.inscripciones.emitir_constancia` |
+| `/api/v1/departamento/inscripciones/<id>/validar/` | POST | Departamento (`can_validate_credits`) | `services.inscripciones.validar_y_registrar` |
+
+Los errores de negocio (`AcomError` y subclases) se traducen a HTTP en un solo lugar: `api/exceptions.py` — el mismo principio de "una sola fuente de verdad" que ya usa `services/permisos.py` para las reglas de autorización.
 
 ## Las capas y la regla de dependencia
 
