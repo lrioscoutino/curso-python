@@ -101,6 +101,8 @@ Un equipo por capa. Cada equipo prepara una explicación de **10 minutos** con e
 - ¿Qué respuesta HTTP recibe un estudiante que intenta validar créditos? ¿Y un docente ajeno al abrir un panel? ¿Por qué distintas?
 - ¿Qué hace `test_doble_inscripcion_muestra_error_y_no_500`?
 
+> **Plan de 2 semanas para 7 equipos:** funcionalidades del lineamiento TecNM en [`PLAN_EQUIPOS.md`](PLAN_EQUIPOS.md).
+
 ## Ronda final: la extensión que atraviesa todas las capas
 
 En equipos mezclados (una persona de cada capa), agreguen **`limite_cupo`** a la actividad. Deben tocar las cuatro capas y no pueden saltarse ninguna:
