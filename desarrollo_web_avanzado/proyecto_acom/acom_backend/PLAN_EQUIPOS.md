@@ -9,6 +9,102 @@ Cada equipo implementa **una funcionalidad** que falta respecto al lineamiento. 
 
 ---
 
+## 0. Antes de empezar: cómo se trabaja en equipo con Git, paso a paso
+
+Si nunca has colaborado en un repositorio compartido con otras personas, lee esto completo antes del Día 1 — asume cero experiencia previa. Si necesitas repasar conceptos base de Git (qué es un commit, una rama, cómo resolver un conflicto), ya los viste en [`../../../curso_git/README.md`](../../../curso_git/README.md) y [`../../../git_avanzado/README.md`](../../../git_avanzado/README.md) — aquí solo se explica **cómo se aplica eso específicamente a este proyecto**.
+
+### Glosario mínimo (si algo no te suena, es normal)
+
+| Término | En una frase |
+|---|---|
+| **Rama (branch)** | Una copia paralela del código donde puedes experimentar sin afectar el trabajo de los demás equipos. |
+| **Commit** | Una "foto" guardada de tus cambios, con un mensaje que explica qué hiciste. |
+| **Push** | Subir tus commits locales al repositorio compartido (GitHub). |
+| **Pull** | Bajar a tu máquina los cambios que otros ya subieron. |
+| **Pull Request (PR)** | Una solicitud formal de "aquí está mi rama terminada, revísenla antes de mezclarla con `main`". |
+| **Merge** | El acto de mezclar una rama (ya revisada) dentro de `main`. |
+| **Conflicto** | Cuando dos personas editaron la misma línea del mismo archivo y Git no puede decidir solo cuál versión usar. |
+| **`main`** | La rama "oficial" del proyecto — lo que está en `main` es lo que funciona de verdad, para todos. |
+
+### Paso a paso — lo que hace tu equipo el Día 1, literalmente comando por comando
+
+**1. Clonar el repositorio (solo una persona del equipo, o cada quien si prefieren trabajar por separado):**
+```bash
+git clone <url-del-repositorio>
+cd curso-python/desarrollo_web_avanzado/proyecto_acom/acom_backend
+```
+
+**2. Crear la rama de tu equipo, a partir de `main` actualizado:**
+```bash
+git checkout main
+git pull origin main          # asegúrate de partir de la versión más reciente
+git checkout -b equipo-1/catalogo-campos   # el nombre exacto de tu equipo, de la sección 4
+```
+
+**3. Trabajar normal — editar archivos, correr pruebas, repetir:**
+```bash
+uv run python manage.py test
+uv run ruff check --no-fix acom api config
+```
+
+**4. Guardar tu avance en commits pequeños y frecuentes (no un solo commit gigante al final):**
+```bash
+git add acom/domain/reglas.py acom/domain/exceptions.py
+git commit -m "Agrega regla tipo_pertenece_a_campo y error TipoNoCorrespondeError"
+
+# ...sigues trabajando...
+
+git add acom/models.py acom/migrations/
+git commit -m "Agrega modelo TipoActividad y migración de datos del catálogo"
+```
+
+> Un commit por **cada pieza que funciona por sí sola** (un modelo, una regla, un endpoint) — no esperes a terminar todo para hacer el primer commit. Si algo sale mal, puedes regresar al último commit bueno sin perder todo el trabajo.
+
+**5. Subir tu rama a GitHub (la primera vez necesita `-u`, después basta `git push`):**
+```bash
+git push -u origin equipo-1/catalogo-campos
+```
+
+**6. Abrir el Pull Request cuando tu funcionalidad esté lista (con pruebas en verde):**
+```bash
+gh pr create --title "E1: Catálogo oficial de campos y tipos de actividad" --body "Implementa el catálogo de 6 campos del lineamiento. Pruebas: uv run python manage.py test (verde). Swagger: GET /api/v1/campos/"
+```
+Si no tienen `gh` instalado, se hace igual desde la página de GitHub: entra al repositorio, pestaña **Pull requests → New pull request**, elige tu rama, y llena título y descripción.
+
+**7. Pedir la revisión al equipo que les toca según la rotación (sección 4) y esperar su aprobación antes de mezclar.**
+
+**8. Una vez aprobado y mezclado a `main`, todos los equipos actualizan su copia local antes de seguir trabajando:**
+```bash
+git checkout main
+git pull origin main
+git checkout equipo-2/horas-creditos   # tu propia rama
+git merge main                          # trae los cambios nuevos de main a tu rama
+```
+
+### Cómo dividirse el trabajo **dentro** de un equipo de 3-5 personas
+
+La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que hacerlas en fila, una persona esperando a que la otra termine**. Repártanse así desde el primer día:
+
+1. **Una persona** diseña y escribe las funciones de **Dominio** primero (son las más simples: reciben valores, devuelven valores, sin base de datos) — esto desbloquea a los demás porque ya pueden importar esas funciones aunque el resto no esté listo.
+2. **Otra persona** en paralelo prepara **Infraestructura**: el modelo/campo nuevo y su migración, sin esperar a que el dominio esté terminado.
+3. Cuando el dominio y la infraestructura ya existen (aunque sea una primera versión), **una tercera persona** conecta todo en **Aplicación** (el servicio).
+4. **Presentación** (HTML + API) se hace al final, cuando el servicio ya funciona — y puede dividirse entre dos personas: una el HTML, otra los endpoints/serializers de la API.
+5. **Las pruebas no son de una sola persona al final** — cada quien escribe la prueba de lo que acaba de programar, en el mismo commit o el siguiente.
+
+**Si su equipo es de 3 personas:** una toma Dominio+Infraestructura, otra Aplicación, otra Presentación+API — y todos revisan el PR final juntos antes de pedir la revisión cruzada.
+
+### Qué hacer si algo sale mal (antes de entrar en pánico)
+
+| Problema | Qué hacer |
+|---|---|
+| "Hice `git push` y me rechazó, dice que hay cambios nuevos" | `git pull origin <tu-rama>` primero, resuelve lo que pida, y vuelve a intentar el push. |
+| "Tengo un conflicto al hacer `git merge main`" | Repasa [`07_resolucion_conflictos.md`](../../../curso_git/07_resolucion_conflictos.md) — Git marca con `<<<<<<<` las líneas en conflicto; edita el archivo dejando la versión correcta, luego `git add` + `git commit`. |
+| "Corrí las pruebas y ahora fallan cosas que yo no toqué" | Probablemente mezclaste `main` y algo de otro equipo rompió un *fixture* compartido — avisa en el canal del grupo, no lo arregles solo sin avisar. |
+| "No sé si debo hacer commit de algo" | Si tu código corre y las pruebas relacionadas pasan, sí. Nunca subas un commit con pruebas en rojo a propósito "para después". |
+| "Dos equipos tocaron el mismo archivo y hay conflicto de migraciones" | Ver sección 4, "Migraciones (riesgo principal)" — se borra y regenera la migración propia, nunca se edita la de otro equipo. |
+
+---
+
 ## 1. Qué pide el lineamiento y qué falta en el código
 
 | Lineamiento TecNM | Estado actual | Equipo |
