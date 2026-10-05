@@ -9,6 +9,72 @@ Cada equipo implementa **una funcionalidad** que falta respecto al lineamiento. 
 
 ---
 
+## Resumen para el estudiante: qué es esto, en términos de usuario final
+
+Antes de los comandos y las tablas técnicas, esto es lo que estás construyendo, explicado como si fueras la persona que **usa** el sistema, no quien lo programa.
+
+### ¿Qué es ACOM?
+
+Es el sistema donde un estudiante del TecNM registra sus "actividades complementarias" (un curso, una certificación, un torneo deportivo, una brigada social, etc.) para que le cuenten como créditos obligatorios de su carrera — hoy en día, en la vida real, esto se hace a mano con papeles y firmas. Ustedes están construyendo la versión digital.
+
+### Los 3 tipos de persona que van a usar lo que programen
+
+| Rol | Qué hace en el sistema (sin tecnicismos) |
+|---|---|
+| **Estudiante** | Entra, ve el catálogo de actividades disponibles, se inscribe a una, y cuando la termina puede ver/descargar su constancia y revisar cuántos créditos le faltan. |
+| **Responsable de área** (quien organiza la actividad) | Revisa quién se inscribió, registra si cumplió (horas, asistencia), y aprueba o rechaza. Al aprobar, se genera la constancia. |
+| **Departamento** (quien administra todo el programa) | Ve el avance de todos los estudiantes, detecta quién ya cumplió sus 5 créditos y puede "liberarlo" (darle de alta como completado) para que siga su trámite de titulación. |
+
+### Lo que cada uno de los 7 equipos debe hacer, explicado sin jerga técnica
+
+**E1 — Catálogo oficial de campos y tipos de actividad**
+- Reemplazar las categorías actuales (inventadas) por los 6 campos oficiales del lineamiento.
+- Armar la lista de tipos de actividad que entran en cada campo (ej. "idiomas" entra en Actividades formativas), con datos reales, no de ejemplo.
+- Lograr que cada actividad del catálogo diga a qué campo y tipo pertenece, y que no se pueda mezclar un tipo con el campo equivocado.
+- Resultado que el usuario ve: el catálogo de actividades está ordenado por los 6 campos oficiales, no por categorías sueltas.
+
+**E2 — Horas y valor en créditos**
+- Definir la regla oficial: 20 horas = 1 crédito.
+- Hacer que cada actividad calcule sola sus créditos a partir de las horas que pide, y bloquear cualquier actividad que termine valiendo menos de 1 o más de 2 créditos.
+- Mostrar esas horas y créditos en pantalla y en la API.
+- Resultado que el usuario ve: cada actividad dice cuántas horas necesita y cuántos créditos vale, con el cálculo correcto.
+
+**E3 — Límite de créditos por campo**
+- Definir cuántos créditos como máximo se pueden acumular en un solo campo (según el lineamiento).
+- Hacer que el sistema cuente los créditos ya validados por campo para cada estudiante.
+- Bloquear con un mensaje claro cualquier intento de validar un crédito que exceda ese límite en un campo.
+- Resultado que el usuario ve: no se puede "hacer trampa" acumulando todos los créditos en un solo tipo de actividad.
+
+**E4 — Registro de horas cumplidas**
+- Crear la forma de registrar, actividad por actividad, cuántas horas de verdad cumplió cada estudiante (no basta con que se haya inscrito).
+- Hacer que solo el responsable de la actividad pueda registrar esas horas.
+- Bloquear la aprobación de una actividad si no se cumplieron las horas mínimas requeridas.
+- Resultado que el usuario ve: inscribirse ya no es suficiente — hay que demostrar que se cumplieron las horas antes de que cuente.
+
+**E5 — Periodos escolares y fechas de inscripción**
+- Crear el concepto de "periodo escolar" (ej. 2026-2) con fecha de inicio y fin.
+- Hacer que cada actividad tenga una ventana de fechas en la que se puede inscribir gente.
+- Bloquear, con un mensaje claro, cualquier inscripción fuera de esa ventana.
+- Resultado que el usuario ve: las actividades solo se pueden ofertar e inscribir dentro de fechas concretas, no todo el año sin control.
+
+**E6 — Constancia de acreditación descargable**
+- Diseñar el formato de la constancia oficial (los datos que exige el lineamiento: folio, estudiante, actividad, campo, horas, créditos, responsable, firma).
+- Hacer que el sistema genere esa constancia automáticamente al aprobar una actividad.
+- Permitir que el estudiante dueño y el responsable la vean/impriman, y bloquear a cualquier otra persona.
+- Resultado que el usuario ve: hay una constancia real para imprimir, no solo un mensaje de "aprobado" en pantalla.
+
+**E7 — Kárdex y avance por campo**
+- Calcular, para cada estudiante, cuántos créditos lleva en total y desglosados por cada uno de los 6 campos.
+- Definir cuándo un estudiante ya cumplió todo lo necesario (5 créditos, sin pasarse del límite por campo) y puede "liberarse".
+- Mostrar ese resumen al estudiante y una lista de estudiantes liberables al departamento.
+- Resultado que el usuario ve: el estudiante (y el departamento) ve de un vistazo cuánto le falta y si ya puede titularse.
+
+### Por qué importa trabajar en equipo bien (no solo "para la calificación")
+
+Si tu equipo rompe algo que otro equipo ya tenía funcionando (una prueba, un endpoint), **el usuario final sufre eso en la vida real** — así de literal es la metáfora: en un sistema real, un estudiante no podría ver su constancia porque el equipo de kárdex rompió algo sin darse cuenta. Por eso el plan insiste tanto en pruebas en verde y revisión cruzada antes de cada merge.
+
+---
+
 ## 0. Antes de empezar: cómo se trabaja en equipo con Git, paso a paso
 
 Si nunca has colaborado en un repositorio compartido con otras personas, lee esto completo antes del Día 1 — asume cero experiencia previa. Si necesitas repasar conceptos base de Git (qué es un commit, una rama, cómo resolver un conflicto), ya los viste en [`../../../curso_git/README.md`](../../../curso_git/README.md) y [`../../../git_avanzado/README.md`](../../../git_avanzado/README.md) — aquí solo se explica **cómo se aplica eso específicamente a este proyecto**.
