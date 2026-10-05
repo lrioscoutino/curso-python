@@ -155,7 +155,23 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 | Aplicación | Servicio `asignar_tipo(actividad, tipo, usuario)` que valida la regla (solo el departamento, con `exigir_permiso`). |
 | Presentación | HTML: mostrar campo y tipo en `lista_actividades.html`. API: `GET /api/v1/campos/` (campos con sus tipos) y `tipo` en `ActividadComplementariaSerializer`. |
 
-**Aceptación:** Swagger lista los 6 campos oficiales con sus tipos; una actividad no acepta un tipo de otro campo.
+**📅 Actividades diarias (días 1-5):**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Leer el lineamiento y anotar los 6 campos oficiales con 2-3 tipos de actividad por campo | Lista escrita de 6 campos + tipos (puede ser en la ficha de diseño) |
+| 2 | Escribir `tipo_pertenece_a_campo()` y `TipoNoCorrespondeError`, con su prueba sin base de datos | `test_domain.py` nuevo, en verde |
+| 3 | Crear el modelo `TipoActividad`, la FK en `ActividadComplementaria`, y la migración de datos con el catálogo completo | `uv run python manage.py migrate` corre sin error; `/admin/` muestra los tipos cargados |
+| 4 | Servicio `asignar_tipo()` + endpoint `GET /api/v1/campos/` + campo `tipo` en el serializer | Endpoint visible y funcionando en `/api/docs/` |
+| 5 (mañana) | Revisar pruebas y `ruff` en verde, abrir el PR | PR abierto con descripción clara |
+
+**🎯 Meta del equipo:**
+- [ ] Los 6 campos oficiales existen con los nombres exactos del lineamiento
+- [ ] Cada campo tiene su catálogo de tipos cargado automáticamente por la migración de datos
+- [ ] Asignar un tipo de un campo a una actividad de otro campo da un error claro (`TipoNoCorrespondeError`), no una excepción genérica de Django
+- [ ] `GET /api/v1/campos/` aparece en Swagger y responde correctamente
+
+**Aceptación (lo que se revisa al cerrar):** Swagger lista los 6 campos oficiales con sus tipos; una actividad no acepta un tipo de otro campo.
 
 ---
 
@@ -172,7 +188,22 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 
 **Ojo:** `test_no_se_registran_creditos_pasado_el_limite` (`acom/tests/test_services.py`) crea una actividad de `3.00` créditos, que queda fuera de rango. Ajusten esa prueba para que siga probando el límite de 5 créditos con actividades de 1–2 créditos.
 
-**Aceptación:** 40 horas dan 2 créditos; una actividad de 3 créditos no se puede guardar.
+**📅 Actividades diarias (días 1-5):**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño: decidir dónde vive el cálculo horas→créditos (dominio) y confirmar las constantes del lineamiento | Ficha de diseño con `HORAS_POR_CREDITO`, `CREDITOS_MIN`/`MAX` |
+| 2 | `creditos_por_horas()`, `creditos_en_rango()`, `CreditosFueraDeRangoError` + pruebas sin BD | `test_domain.py` en verde |
+| 3 | Campo `horas_requeridas`, `CheckConstraint` 1-2 créditos, migración | `migrate` corre sin error |
+| 4 | Servicio que calcule créditos desde horas y rechace fuera de rango; ajustar `test_no_se_registran_creditos_pasado_el_limite` | Pruebas de servicio en verde |
+| 5 (mañana) | HTML + `horas_requeridas` en el serializer; PR | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] 40 horas calculan automáticamente 2 créditos
+- [ ] Una actividad de 3 créditos (o 0) no se puede guardar
+- [ ] El test de límite global de 5 créditos sigue pasando con actividades de 1-2 créditos
+
+**Aceptación (lo que se revisa al cerrar):** 40 horas dan 2 créditos; una actividad de 3 créditos no se puede guardar.
 
 ---
 
@@ -189,7 +220,23 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 
 **Ojo:** los *fixtures* crean todas las actividades en `INVESTIGACION`. Agreguen un parámetro `categoria` a `crear_actividad` en `acom/tests/base.py` (con el valor actual como *default*) para que las pruebas de límite global sigan pasando.
 
-**Aceptación:** un estudiante con 2 créditos en Investigación no puede validar otro crédito en Investigación, pero sí en Tutoría.
+**📅 Actividades diarias:**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño (en paralelo, aunque la implementación espere a E1): leer cómo queda `CategoriaActividad`, fijar `MAX_CREDITOS_POR_CAMPO` | Ficha de diseño |
+| 2-5 | Mientras E1 no está mezclado: escribir `excede_limite_campo()` y `LimiteCampoError` + sus pruebas de dominio (no dependen de E1, son función pura) | `test_domain.py` en verde, sin tocar BD |
+| 6 | `git pull origin main` (ya con E1 integrado); selector `total_validado_por_campo()` | Selector probado contra datos reales |
+| 7 | `validar_y_registrar` revisa el límite por campo después de bloquear al estudiante | Prueba de servicio en verde |
+| 8 | Parámetro `categoria` en `crear_actividad` (`acom/tests/base.py`); panel del departamento + API muestran el error | Pruebas existentes de límite global siguen pasando |
+| 9 | Pruebas finales, revisión cruzada, PR | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] Un estudiante con 2 créditos en un campo no puede validar otro crédito en ese mismo campo
+- [ ] Sí puede validar créditos en un campo distinto
+- [ ] El error se ve tanto en el panel del departamento como en la API (`400`)
+
+**Aceptación (lo que se revisa al cerrar):** un estudiante con 2 créditos en Investigación no puede validar otro crédito en Investigación, pero sí en Tutoría.
 
 ---
 
@@ -206,7 +253,23 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 
 **Ojo:** `inscripcion_con_constancia` en `acom/tests/base.py` aprueba sin horas. Hagan que registre las horas requeridas antes de evaluar.
 
-**Aceptación:** no se puede aprobar una inscripción con 15 de 20 horas; con 20 sí.
+**📅 Actividades diarias:**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño: quién registra las horas (el responsable), qué datos guarda `RegistroHoras` | Ficha de diseño |
+| 2-5 | Dominio: `horas_cumplidas()`, `HorasInsuficientesError` + pruebas (no depende de E2 para el dominio puro) | `test_domain.py` en verde |
+| 6 | `git pull origin main` (ya con E2 integrado); modelo `RegistroHoras` + migración + selector `horas_acumuladas()` | `migrate` corre sin error |
+| 7 | `acom/services/horas.py`: `registrar_horas()` (solo responsable, solo estado `INSCRITO`); `evaluar(aprobado=True)` exige horas | Prueba de servicio en verde |
+| 8 | Ajustar `inscripcion_con_constancia` en `acom/tests/base.py`; formulario en `panel_responsable.html` + endpoint API | Pruebas existentes siguen pasando |
+| 9 | Pruebas finales, PR | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] No se puede aprobar una inscripción con menos horas de las requeridas (ej. 15 de 20)
+- [ ] Con las horas completas (20 de 20), sí se puede aprobar
+- [ ] El fixture compartido (`inscripcion_con_constancia`) sigue funcionando para los demás equipos
+
+**Aceptación (lo que se revisa al cerrar):** no se puede aprobar una inscripción con 15 de 20 horas; con 20 sí.
 
 ---
 
@@ -221,7 +284,23 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 | Aplicación | `inscribir` valida la ventana de fechas (reciban `hoy` como parámetro o usen `timezone.localdate()` en el servicio, **nunca** en el dominio). |
 | Presentación | HTML: mostrar la ventana de inscripción. API: filtro `GET /api/v1/actividades/?periodo=2026-2` y los campos nuevos en el serializer. |
 
-**Aceptación:** inscribirse fuera de la ventana devuelve `400` con mensaje claro; las pruebas de dominio usan fechas fijas, sin reloj real.
+**📅 Actividades diarias (días 1-8, equipo independiente):**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño: qué campos necesita `Periodo`, qué pasa con actividades sin periodo (retrocompatibilidad) | Ficha de diseño |
+| 2-3 | Dominio: `inscripcion_abierta(hoy, abre, cierra)`, `InscripcionCerradaError` + pruebas con fechas fijas | `test_domain.py` en verde, sin `timezone.now()` |
+| 4 | Infraestructura: modelo `Periodo`, FK y campos de fecha en `ActividadComplementaria`, migración (con *defaults* que no rompan datos existentes) | `migrate` corre sin error |
+| 5-6 | Aplicación: `inscribir` valida la ventana (recibe `hoy` como parámetro; el dominio nunca llama al reloj real) | Prueba de servicio en verde |
+| 7 | Presentación/API: filtro `?periodo=`, campos nuevos en el serializer, HTML | Endpoint probado en Swagger |
+| 8 | `git pull origin main` (ya con E1/E2 integrados), resolver conflictos si los hay, pruebas finales, PR | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] Existe el modelo `Periodo` con clave única
+- [ ] Inscribirse fuera de la ventana de fechas da `400` con mensaje claro
+- [ ] Las pruebas de dominio usan fechas fijas, nunca `datetime.now()` o `timezone.localdate()` dentro del dominio
+
+**Aceptación (lo que se revisa al cerrar):** inscribirse fuera de la ventana devuelve `400` con mensaje claro; las pruebas de dominio usan fechas fijas, sin reloj real.
 
 ---
 
@@ -236,7 +315,24 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 | Aplicación | `emitir_constancia` llena los campos nuevos. Servicio `obtener_constancia(inscripcion_id, usuario)` que autoriza con la regla anterior (en `permisos.py`). |
 | Presentación | Plantilla imprimible `acom/templates/acom/constancia.html` (folio, estudiante, actividad, campo, horas, créditos, fecha, responsable y espacio de firma) y su URL en `acom/urls.py`. API: `GET /api/v1/mis-inscripciones/<id>/constancia/` devuelve los datos en JSON. **Extra opcional:** exportar a PDF. |
 
-**Aceptación:** el estudiante dueño y el responsable ven la constancia; cualquier otro usuario recibe `403`.
+**📅 Actividades diarias (días 1-8, equipo independiente):**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño: qué campos lleva la constancia, bocetar la plantilla en papel | Ficha de diseño |
+| 2 | Dominio: `puede_ver_constancia()` + pruebas (reutilizar `generar_folio`) | `test_domain.py` en verde |
+| 3-4 | Infraestructura: campos `area_responsable`/`horas_acreditadas` en `Constancia` (con *defaults*), migración, selector `constancia_de()` | `migrate` corre sin error |
+| 5-6 | Aplicación: `emitir_constancia` llena los campos nuevos; `obtener_constancia()` autoriza con la regla del dominio | Prueba de servicio en verde |
+| 7 | Presentación: plantilla `constancia.html` + URL; endpoint API JSON | Constancia visible en navegador y en Swagger |
+| 8 | `git pull origin main`, pruebas finales, PR | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] La constancia muestra folio, estudiante, actividad, campo, horas, créditos, fecha y responsable
+- [ ] El estudiante dueño y el responsable pueden verla
+- [ ] Cualquier otro usuario recibe `403`
+- [ ] (Opcional) exportación a PDF
+
+**Aceptación (lo que se revisa al cerrar):** el estudiante dueño y el responsable ven la constancia; cualquier otro usuario recibe `403`.
 
 ---
 
@@ -251,7 +347,21 @@ La funcionalidad de tu equipo atraviesa las cuatro capas, pero **no tienen que h
 | Aplicación | Caso de uso `kardex(estudiante)` que junte total, faltantes, desglose y si puede liberar. |
 | Presentación | HTML: vista de kárdex del estudiante. API: **ampliar** `GET /api/v1/mis-inscripciones/resumen/` con `por_campo` y `liberado` (se agregan campos a `ResumenCreditosSerializer` y los actuales se quedan). `GET /api/v1/departamento/liberables/` con `PuedeValidarCreditos`. |
 
-**Aceptación:** el resumen muestra los 6 campos (incluidos los que están en 0) y `liberado` pasa a `true` al llegar a 5 créditos válidos.
+**📅 Actividades diarias:**
+
+| Día | Actividad | Entregable del día |
+|---|---|---|
+| 1 | Diseño: qué debe mostrar el kárdex (desglose por campo + total + liberado) | Ficha de diseño |
+| 2-7 | Preparar `avance_por_campo()` y la regla pura `puede_liberar()` con pruebas usando datos de ejemplo (no requiere que E1/E3 estén mezclados para escribir el código) | `test_domain.py` en verde |
+| 8 | `git pull origin main` (ya con E1 y E3 integrados); conectar los selectores reales, ampliar `ResumenCreditosSerializer` | Selector probado contra datos reales |
+| 9 | Endpoint `GET /api/v1/departamento/liberables/`, pruebas finales, último PR en mezclarse | PR abierto |
+
+**🎯 Meta del equipo:**
+- [ ] El resumen de créditos muestra los 6 campos, incluidos los que están en 0
+- [ ] `liberado` pasa a `true` solo al llegar a 5 créditos Y respetando el límite por campo
+- [ ] El departamento puede ver la lista de estudiantes liberables
+
+**Aceptación (lo que se revisa al cerrar):** el resumen muestra los 6 campos (incluidos los que están en 0) y `liberado` pasa a `true` al llegar a 5 créditos válidos.
 
 ---
 
